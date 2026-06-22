@@ -31,7 +31,7 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
             {items.length ? (
               <ul className="list-disc pl-4 space-y-1">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
             ) : (
-              <span className="text-muted-foreground/60 italic">Complete the Reflections of Component {c.number} to populate this row.</span>
+              <span className="italic text-muted-foreground/60">Add your notes at the end of Component {c.number} and they will show here.</span>
             )}
           </td>
         </tr>
@@ -41,22 +41,23 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
   return (
     <div>
       <div className="mb-6">
-        <div className="text-[0.72rem] font-bold uppercase tracking-[0.2em] text-accent">Output</div>
-        <h2 className="font-serif text-3xl md:text-4xl mt-2">Summary &amp; Submission</h2>
-        <p className="mt-3.5 text-[1.02rem] text-muted-foreground max-w-2xl border-l-[3px] border-primary pl-4">
-          This chapter self-generates from the Reflections you entered at the end of each component — exactly like the printed module. The final items are completed manually.
+        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-primary">Summary</div>
+        <h2 className="mt-2 font-serif text-3xl md:text-4xl">Your answers, brought together</h2>
+        <p className="mt-3.5 max-w-2xl text-[1.02rem] leading-relaxed text-muted-foreground">
+          This page pulls together the notes you added at the end of each area, plus the indicator you set
+          for each one. Add the few remaining items below, then submit.
         </p>
       </div>
 
-      <div className="flex gap-5 items-center rounded-2xl p-6 mb-7 text-primary-foreground" style={{ background: "linear-gradient(135deg,hsl(var(--primary-600)),hsl(var(--primary)))" }}>
-        <div className="font-serif text-4xl leading-none">{pct}%</div>
+      <div className="mb-7 flex items-center gap-5 rounded-lg border border-border bg-secondary/30 p-6">
+        <div className="font-serif text-4xl leading-none text-primary">{pct}%</div>
         <div>
-          <strong>Assessment progress</strong>
-          <p className="m-0 text-sm opacity-90">{pct === 100 ? "Every section has a response. Ready to submit." : "Fields autosave to this browser as you complete them."}</p>
+          <strong className="text-foreground">Progress</strong>
+          <p className="m-0 text-sm text-muted-foreground">{pct === 100 ? "Every section has a response. You are ready to submit." : "Your answers save to this browser as you go."}</p>
         </div>
       </div>
 
-      <h3 className="font-serif text-xl mb-3">Indicator scorecard</h3>
+      <h3 className="mb-3 font-serif text-xl">How ready each area looks</h3>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5 mb-7">
         {COMPONENTS.map((c) => {
           const v = Number(getField(`${c.id}__scale`)) || 0;
@@ -66,35 +67,35 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
             <div key={c.id} className="rounded-xl border border-border bg-card p-3.5 text-center">
               <div className="text-[0.72rem] text-muted-foreground min-h-[30px]">C{c.number} · {COMPONENT_TITLES[c.id].split(" ").slice(0, 2).join(" ")}</div>
               <div className="h-2 rounded-full bg-secondary my-2 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${v * 25}%`, background: color }} /></div>
-              <div className="font-serif font-bold text-[0.95rem]" style={{ color }}>{s ? s.label : "—"}</div>
+              <div className="text-[0.95rem] font-bold" style={{ color: v ? color : "hsl(var(--muted-foreground))" }}>{s ? s.label : "Not set"}</div>
             </div>
           );
         })}
       </div>
 
-      <h3 className="font-serif text-xl mb-3">Key points that may make implementation challenging</h3>
-      <table className="w-full border-collapse rounded-2xl overflow-hidden border border-border bg-card mb-7">
-        <thead><tr><th className="text-left text-[0.78rem] uppercase tracking-wide p-3 bg-accent/10 text-accent">Component</th><th className="text-left text-[0.78rem] uppercase tracking-wide p-3 bg-accent/10 text-accent">Challenges</th></tr></thead>
+      <h3 className="mb-3 font-serif text-xl">What might make this difficult</h3>
+      <table className="mb-7 w-full border-collapse overflow-hidden rounded-lg border border-border bg-card">
+        <thead><tr><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Area</th><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Points raised</th></tr></thead>
         <tbody>{reflRows("challenge")}</tbody>
       </table>
 
-      <h3 className="font-serif text-xl mb-3">Key points that support implementation</h3>
-      <table className="w-full border-collapse rounded-2xl overflow-hidden border border-border bg-card mb-7">
-        <thead><tr><th className="text-left text-[0.78rem] uppercase tracking-wide p-3 bg-primary/10 text-primary">Component</th><th className="text-left text-[0.78rem] uppercase tracking-wide p-3 bg-primary/10 text-primary">Supports</th></tr></thead>
+      <h3 className="mb-3 font-serif text-xl">What is already working in your favour</h3>
+      <table className="mb-7 w-full border-collapse overflow-hidden rounded-lg border border-border bg-card">
+        <thead><tr><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Area</th><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Points raised</th></tr></thead>
         <tbody>{reflRows("support")}</tbody>
       </table>
 
-      <h3 className="font-serif text-xl mb-3">Additional items (completed manually)</h3>
-      <div className="rounded-2xl border border-border bg-card px-5 mb-7">
-        <Extra id="sum_gaps" q="Were there any evidence gaps / research questions noted during the scoping exercise?" />
-        <Extra id="sum_groups" q="Additional information on parent-teacher associations, child-to-child / child-to-community groups (girl guides, scouts, etc.)?" />
-        <Extra id="sum_unserved" q="Groups with no eye-health screening service (e.g. street children)? Can you estimate their numbers?" />
+      <h3 className="mb-3 font-serif text-xl">A few last things</h3>
+      <div className="mb-7 rounded-lg border border-border bg-card px-5">
+        <Extra id="sum_gaps" q="Were there any gaps in the evidence, or questions you still want to look into?" />
+        <Extra id="sum_groups" q="Anything to add about parent and teacher associations, or child and community groups such as guides and scouts?" />
+        <Extra id="sum_unserved" q="Are there groups with no eye screening service, such as street children? Roughly how many?" />
       </div>
 
-      <div className="rounded-2xl border border-dashed border-input bg-card p-6">
-        <strong>End of environmental assessment.</strong>
-        <p className="mt-2 mb-4 text-sm text-muted-foreground">When complete, submit your report and it will be emailed straight to the Peek SEHRA team. A time will then be arranged to go through the data from this module.</p>
-        <Button size="lg" onClick={onSubmit}>✉ Submit &amp; email the completed module</Button>
+      <div className="rounded-lg border border-border bg-secondary/30 p-6">
+        <strong className="text-foreground">That is the whole assessment.</strong>
+        <p className="mb-4 mt-2 text-sm text-muted-foreground">Submit it and it goes to the Peek team by email. They will get in touch to arrange a time to go through your answers together.</p>
+        <Button size="lg" onClick={onSubmit}>Submit the assessment</Button>
       </div>
     </div>
   );

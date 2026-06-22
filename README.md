@@ -1,17 +1,17 @@
-# SEHRA Scoping Module — The Minto Method
+# SEHRA Scoping Module
 
-An interactive web app that **replaces the printed SEHRA Scoping Module PDF** for Peek Vision. Users complete the School Eye Health Rapid Assessment online and, on submit, the full report is **emailed straight to the Peek SEHRA team** — automating the manual "fill PDF → send → analyse → return a form" loop.
+An interactive web app that replaces the printed SEHRA Scoping Module PDF for Peek Vision. Users complete the School Eye Health Rapid Assessment online and, on submit, the completed assessment is emailed straight to the Peek SEHRA team. This removes the manual loop of printing a PDF, filling it in, sending it for analysis, and waiting for a form back.
 
-Built with **React + TypeScript + Vite + Tailwind CSS**, using the **shadcn** project structure (`src/components/ui`).
+Built with React, TypeScript, Vite and Tailwind CSS, using the shadcn project structure (`src/components/ui`).
 
-## Features
+## What it does
 
-- **Full content of the module** — Context plus all five components (Legislation & Policy, Service Delivery, Human Resources, Supply Chain, Barriers): every question, table, checklist, line of enquiry and reflection.
-- **Fully interactive & autosaving** — every answer saves to the browser (`localStorage`) instantly; nothing is lost on refresh.
-- **Indicator scale** with an animated pointer, per component, exactly as the printed module describes.
-- **Self-generating Summary** — the 3 challenges / 3 supports you type at the end of each component flow into the summary tables and an indicator scorecard, with a live completion ring.
-- **One-click submission** — compiles a complete report and emails it to the Peek team, with mailto and downloadable `.html` / `.json` fallbacks.
-- **Showcase landing page** built from interactive components: a Spline 3D hero with spotlight + sparkles, a tubelight navbar, an animated hero on an aurora background, an interactive radial-orbital timeline of the module, a feature grid, and an animated background-paths call to action.
+- **All of the module content.** Context plus the five components (Legislation and policy, Service delivery, People and skills, Supply chain, Barriers): every question, table, checklist, line of enquiry and reflection.
+- **Saves as you type.** Every answer is stored in the browser (`localStorage`), so nothing is lost on refresh.
+- **An indicator scale** for each area, matching the printed module.
+- **A summary that writes itself.** The points you note at the end of each area flow into the summary tables and a readiness scorecard, with a live progress bar.
+- **Submit in one step.** The assessment is compiled and emailed to the Peek team, with email-app and downloadable `.html` / `.json` fallbacks.
+- **A clean, light interface.** A single continuous page with an animated iris on the hero, a plain overview of what the assessment covers, and the form itself, all in one place.
 
 ## Getting started
 

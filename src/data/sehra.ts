@@ -1,5 +1,5 @@
 /* ============================================================
-   SEHRA Scoping Module — content model (TypeScript)
+   SEHRA Scoping Module / content model (TypeScript)
    Drives every form so the Summary self-generates, exactly as
    the printed Minto Method module describes.
    ============================================================ */
@@ -41,10 +41,10 @@ const SECTORS = ["Public Sector", "NGO Sector", "Charity", "Faith-based", "Priva
 export const NARRATIVE = {
   background: {
     body: [
-      "School eye health programmes are not new and have been implemented for decades globally. However, they can all vary — from how they are implemented, to the different methods of monitoring and evaluation, to who is involved.",
+      "School eye health programmes are not new and have been implemented for decades globally. However, they can all vary / from how they are implemented, to the different methods of monitoring and evaluation, to who is involved.",
       "What holds true for all regions is that effective school eye health programmes are a critical part of any health system. Addressing eye health problems in childhood can have a powerful positive effect on an individual's chance of educational success, prosperity and well-being.",
       "While the well-established RAAB survey methodology lets health services estimate eye-health problems in people aged 50 and over, no comparable tool exists for school-going children. The School Eye Health Rapid Assessment (SEHRA) tool fills that gap.",
-      "SEHRA uses rapid sampling to reveal the proportion and type of eye-health problems in school children — so programmes, campaigns and funding can be planned efficiently.",
+      "SEHRA uses rapid sampling to reveal the proportion and type of eye-health problems in school children / so programmes, campaigns and funding can be planned efficiently.",
     ],
     pillars: [
       "Students and teachers with good vision and healthy eyes",
@@ -63,7 +63,7 @@ export const NARRATIVE = {
     "Establish a new and innovative school eye health screening and planning method.",
     "Develop and implement a rapid assessment survey methodology to understand regional eye health needs.",
     "Implement a high quality and efficient school eye health planning tool.",
-    "Use Peek software to automate the survey — saving time and money with bespoke data management.",
+    "Use Peek software to automate the survey / saving time and money with bespoke data management.",
     "Enable real-time data collection with quality-assurance feedback via a web dashboard.",
     "Track each child's journey from screening to referral so no one is lost to follow-up.",
   ],
@@ -88,9 +88,9 @@ export const CONTEXT: Component = {
       questions: [
         field("ctx_pop", "Total population"),
         table("ctx_children", "Number of children in the following age groups", ["1 – 4 years", "5 – 9 years", "10 – 14 years", "15 – 19 years"], ["Number of children"]),
-        table("ctx_schools", "Number of schools by level and school type", ["Pre-Primary", "Primary", "Middle", "Secondary", "Higher Secondary", "Total"], ["Public", "Private", "NGO or Faith-based"]),
-        table("ctx_enrol", "School enrolment by school type and gender (or Net Enrolment Rate)", ["Public — M", "Public — F", "Public — Total", "NGO/Faith — M", "NGO/Faith — F", "NGO/Faith — Total", "Private — M", "Private — F", "Private — Total"], ["Enrolment"]),
-        table("ctx_attend", "School attendance rate by school type and gender", ["Public — M", "Public — F", "Public — Total", "NGO/Faith — M", "NGO/Faith — F", "NGO/Faith — Total", "Private — M", "Private — F", "Private — Total"], ["Attendance"]),
+        table("ctx_schools", "Number of schools by level and school type", ["Pre-Primary", "Primary", "Middle Secondary", "Secondary", "Higher Secondary", "Total"], ["Public", "Private", "NGO or Faith-based"]),
+        table("ctx_enrol", "School enrolment by school type and gender (or Net Enrolment Rate)", ["Public / M", "Public / F", "Public / Total", "NGO/Faith / M", "NGO/Faith / F", "NGO/Faith / Total", "Private / M", "Private / F", "Private / Total"], ["Enrolment"]),
+        table("ctx_attend", "School attendance rate by school type and gender", ["Public / M", "Public / F", "Public / Total", "NGO/Faith / M", "NGO/Faith / F", "NGO/Faith / Total", "Private / M", "Private / F", "Private / Total"], ["Attendance"]),
         table("ctx_dates", "Important school dates", ["School Year (start & end)", "Exam Periods", "Seasonality considerations"], ["Dates"]),
         txt("ctx_ethnic", "Primary ethnic groups (please list)"),
       ],
@@ -108,7 +108,7 @@ export const CONTEXT: Component = {
     {
       id: "c.3", title: "Prevalence & service availability",
       questions: [
-        field("ctx_prev_area", "Prevalence of refractive errors — specify area"),
+        field("ctx_prev_area", "Prevalence of refractive errors / specify area"),
         table("ctx_prev", "Prevalence of refractive errors in children of school-going age", ["Myopia", "Hypermetropia", "Astigmatism", "Specialised / complex refraction"], ["Males and females", "Males", "Females"]),
         txt("ctx_prev_ref", "References (please list and provide a web link if available)"),
         group("ctx_drops", "Are eye drops or eye ointment available at the following levels?", ["School nurse", "Community health level", "Primary health level", "Secondary health level", "Tertiary health level", "Private pharmacies"]),
@@ -177,8 +177,8 @@ export const COMPONENTS: Component[] = [
         yn("c2_coord", "Is there a coordination mechanism for school health / school eye health within the intervention area?", { lines: ["If yes, please describe the mechanism"] }),
       ]},
       { id: "2.2", title: "Infrastructure", questions: [
-        table("c2_inf_edu", "Education Sector Infrastructure — Number of Facilities", ["Pre-Primary", "Primary", "Middle Secondary", "Secondary"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
-        table("c2_inf_health", "Health Sector Infrastructure — Number of Facilities", ["Community HC", "Primary HC", "Secondary HC", "Tertiary HC"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
+        table("c2_inf_edu", "Education Sector Infrastructure / Number of Facilities", ["Pre-Primary", "Primary", "Middle Secondary", "Secondary"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
+        table("c2_inf_health", "Health Sector Infrastructure / Number of Facilities", ["Community HC", "Primary HC", "Secondary HC", "Tertiary HC"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
       ]},
       { id: "2.3", title: "School-based Health programme", questions: [
         yn("c2_shp", "Are there any school-based specific health programmes within the intervention area? (deworming, NTDs, WASH, NCDs, nutrition)", { lines: ["Does the programme include school eye health?", "Implementer & funder?", "Scope: schools, grades, age range, eye conditions?", "Promotion, teachers' eye health, screening, referral?", "Refraction, eyeglasses, who pays?"] }),
@@ -216,14 +216,14 @@ export const COMPONENTS: Component[] = [
     id: "c3", number: 3, title: "Human Resources",
     purpose: "To find out if the right people, with the right skills, in the right place, are in enough numbers to operationalise a school eye health programme.",
     subsections: [
-      { id: "3.1", title: "Type of Cadres — Health", questions: [
+      { id: "3.1", title: "Type of Cadres / Health", questions: [
         yn("c3_h_avail", "Are essential health human resources available to implement school health / school eye health?"),
         yn("c3_h_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
         table("c3_h_count", "Type and number of essential health human resources in the intervention area", SECTORS, ["Community health workers", "Primary eye care workers", "Mid-level eye care personnel", "Nurses / school nurses", "Refractionists / Optometrists", "Optical personnel (dispensing)", "Ophthalmologists", "Paediatric ophthalmologists & squint specialists", "Programme managers"]),
         txt("c3_h_capdev", "What additional capacity development needs are likely required?"),
         txt("c3_h_opp", "Opportunities to enhance their knowledge, skills and competencies?"),
       ]},
-      { id: "3.2", title: "Type of Cadres — Education", questions: [
+      { id: "3.2", title: "Type of Cadres / Education", questions: [
         yn("c3_e_avail", "Are essential education human resources available to implement school health / school eye health?"),
         yn("c3_e_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
         table("c3_e_count", "Type and number of essential education human resources in the intervention area", SECTORS, ["Head teachers", "Class & contact teachers", "Special education teachers"]),
@@ -257,7 +257,7 @@ export const COMPONENTS: Component[] = [
       ]},
       { id: "4.4", title: "Costing of eyeglasses (local currency)", questions: [
         field("c4_minwage", "What is the minimum wage in local currency?"),
-        table("c4_costing", "Average retail cost — Simple (≤±2D), High-power (>±5D), Complex (astigmatism)", ["Simple — Public", "Simple — Private", "High — Public", "High — Private", "Complex — Public", "Complex — Private", "Remarks"], ["Custom prescription glasses", "Ready-made distance glasses", "Ready-made reading glasses", "Ready-to-clip lenses and frames"]),
+        table("c4_costing", "Average retail cost / Simple (≤±2D), High-power (>±5D), Complex (astigmatism)", ["Simple / Public", "Simple / Private", "High / Public", "High / Private", "Complex / Public", "Complex / Private", "Remarks"], ["Custom prescription glasses", "Ready-made distance glasses", "Ready-made reading glasses", "Ready-to-clip lenses and frames"]),
       ]},
       { id: "4.5", title: "Capacity to pay", questions: [
         yn("c4_wtp", "Information on willingness or capacity to pay for eyeglasses?", { lines: ["What is the capacity to pay?"] }),
@@ -290,18 +290,18 @@ export const COMPONENTS: Component[] = [
         yn("c5_girls", "Evidence that the health needs of girls are not prioritised?"),
         yn("c5_ethnic", "Evidence that the health needs of specific ethnic groups are not prioritised?"),
       ]},
-      { id: "5.2", title: "Barriers to wearing eyeglasses — parents & children", questions: [
+      { id: "5.2", title: "Barriers to wearing eyeglasses / parents & children", questions: [
         yn("c5_info", "Is information available on barriers that limit spectacle wear among children, applicable to the intervention area?"),
-        group("c5_perception", "Barriers — perception & awareness", ["Information and awareness", "Fears about wearing eyeglasses", "Unacceptable colour, style or quality", "Low literacy levels of parents", "Lack of information about screening / use of eyeglasses", "No felt need by parents", "Misinformation and misconceptions", "Cultural beliefs and practices", "Traditional / religious beliefs delay treatment", "Child's vision affected by witchcraft", "Bullying and teasing", "Other stigma", "Lack of clear messaging on benefits", "Lack of clear communication on the programme process"]),
-        group("c5_costs", "Barriers — costs", ["Fear of loss of earnings by parents", "Limited family financial resources", "Travel cost to point of referral", "Cost of eyeglasses", "Cost of eye care treatment"]),
-        group("c5_access", "Barriers — access & accessibility", ["Long distance to obtain eyeglasses", "Long distance for eye care treatment", "Delay in dispensing of eyeglasses", "Lack of person to accompany child", "Waiting time between screening and treatment", "Seasonal variation limiting access", "Lack of trust in screening personnel", "Lack of trust in referral provider", "Children with disabilities cannot access screening", "Children with disabilities cannot access referral", "Other"]),
+        group("c5_perception", "Barriers / perception & awareness", ["Fears about wearing eyeglasses", "Unacceptable colour, style or quality", "Low literacy levels of parents", "Lack of information about screening and use of eyeglasses", "No felt need by parents", "Misinformation and misconceptions about eyeglasses", "Cultural beliefs and practices about eye health and use of eyeglasses", "Traditional / religious beliefs prevent or delay treatment of children who need eyeglasses", "Child's vision affected by witchcraft", "Bullying and teasing", "Other stigma", "Lack of clear messaging on the benefits of eyeglasses", "Lack of clear communication on the processes involved in a school eye health programme"]),
+        group("c5_costs", "Barriers / costs", ["Fear of loss of earnings / daily wages by parents to access eyeglasses", "Limited availability of financial resources in family to procure eyeglasses", "Travel cost to point of referral", "Cost of eyeglasses", "Cost of eye care treatment"]),
+        group("c5_access", "Barriers / access & accessibility", ["Long distance to point of referral to obtain eyeglasses", "Long distance to point of referral for eye care treatment", "Delay in dispensing of eyeglasses", "Lack of person to accompany child to referral centre for eyeglasses or eye care treatment", "Waiting time between screening and eye care treatment or provision of eyeglasses", "Seasonal variation that limits access to eye health services", "Lack of trust by parents in personnel conducting screening", "Lack of trust by parents in eye care service provider at referral centre", "Children with disabilities cannot access screening", "Children with disabilities cannot access referral centre", "Other"]),
       ]},
       { id: "5.3", title: "Barriers to the delivery of programmes", questions: [
         yn("c5_system", "Barriers within the health or education system preventing uptake by school-age children?"),
-        group("c5_hr", "Barriers — Human Resources", ["Screeners inadequately trained", "Teachers lack time to screen", "Lack of eye care professionals for referrals", "Poor attitude of education personnel", "Poor attitude of eye health personnel"]),
-        group("c5_supply", "Barriers — Supply Chain", ["No eyeglasses suitable for children available"]),
-        group("c5_finance", "Barriers — Financing", ["Inadequate state investment in school health", "Eyeglasses not in insurance / state financing"]),
-        group("c5_service", "Barriers — Service Delivery", ["Poor integration with other screening programmes", "Lack of support services for vision impairment", "Inadequate referral pathway", "Delays in providing eyeglasses", "Other"]),
+        group("c5_hr", "Barriers / Human Resources", ["Screeners (e.g. teachers or nurses) inadequately trained", "Teachers do not have time to screen", "Lack of eye care professionals to receive and attend to referrals", "Poor attitude / behaviours of education personnel at the point of screening", "Poor attitude and behaviours of eye health personnel at referral centres"]),
+        group("c5_supply", "Barriers / Supply Chain", ["No eyeglasses suitable for children available within the intervention area"]),
+        group("c5_finance", "Barriers / Financing", ["Inadequate state investment in school health services", "Eyeglasses not included in health insurance or other state financing mechanism"]),
+        group("c5_service", "Barriers / Service Delivery", ["Poor integration of school eye health in other health screening programmes", "Lack of support services for children with vision impairment", "Inadequate referral pathway between schools and eye health services", "Delays in providing eyeglasses", "Other"]),
       ]},
       { id: "5.4", title: "Reflections and Implications", questions: [reflections("c5")] },
     ],

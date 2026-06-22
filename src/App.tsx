@@ -1,162 +1,152 @@
-import { useState } from "react";
-import { Home, Info, LayoutGrid, Sparkles as SparkIcon, Eye } from "lucide-react";
-import { NavBar } from "@/components/ui/tubelight-navbar";
-import { Landing } from "@/components/Landing";
-import { ComponentView } from "@/components/assessment/ComponentView";
-import { SummaryView } from "@/components/SummaryView";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+
+import { Hero } from "@/components/Hero";
+import { ComponentOverview } from "@/components/ComponentOverview";
+import { Features } from "@/components/ui/features-8";
 import { EmailModal } from "@/components/EmailModal";
-import { ASSESS } from "@/data/sehra";
-import { useField, setField, useStoreVersion, completionPct, componentDone } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { AssessmentWorkspace, type Section } from "@/components/AssessmentWorkspace";
 
-const SECTIONS = ["context", "c1", "c2", "c3", "c4", "c5", "summary"] as const;
-type Section = (typeof SECTIONS)[number];
+function EyeMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 36 22" className={className} fill="none" aria-hidden>
+      <path
+        d="M2 11C7 3.5 14 1.5 18 1.5C22 1.5 29 3.5 34 11C29 18.5 22 20.5 18 20.5C14 20.5 7 18.5 2 11Z"
+        stroke="hsl(var(--primary))"
+        strokeWidth="1.6"
+      />
+      <circle cx="18" cy="11" r="5" fill="hsl(var(--primary))" />
+      <circle cx="18" cy="11" r="1.8" fill="hsl(var(--background))" />
+      <circle cx="16.2" cy="9.2" r="0.9" fill="hsl(var(--background))" opacity="0.7" />
+    </svg>
+  );
+}
 
-const NAV_LABEL: Record<string, string> = {
-  context: "Context",
-  c1: "Legislation & Policy",
-  c2: "Service Delivery",
-  c3: "Human Resources",
-  c4: "Supply Chain",
-  c5: "Barriers",
-  summary: "Summary & submit",
-};
-const NAV_IDX: Record<string, string> = { context: "C", c1: "1", c2: "2", c3: "3", c4: "4", c5: "5", summary: "∑" };
-
-function MetaBar() {
-  const fields: [string, string][] = [
-    ["meta_country", "Country"], ["meta_province", "Province / Governorate"],
-    ["meta_district", "District / County"], ["meta_date", "Date"],
+function Header({ onStart, onSubmit }: { onStart: () => void; onSubmit: () => void }) {
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const links: [string, string][] = [
+    ["What it covers", "module"],
+    ["How it works", "why"],
+    ["The assessment", "assessment"],
   ];
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-7">
-      {fields.map(([id, lab]) => <MetaField key={id} id={id} label={lab} />)}
-    </div>
-  );
-}
-function MetaField({ id, label }: { id: string; label: string }) {
-  const v = useField(id);
-  return (
-    <div className="rounded-2xl border border-border bg-card px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition">
-      <label className="block text-[0.68rem] uppercase tracking-wider text-muted-foreground mb-1.5">{label}</label>
-      <input value={v} onChange={(e) => setField(id, e.target.value)} placeholder="—" className="w-full bg-transparent font-serif text-lg outline-none" />
-    </div>
-  );
-}
-
-function Ring({ pct }: { pct: number }) {
-  const C = 2 * Math.PI * 24;
-  return (
-    <div className="relative w-14 h-14">
-      <svg width="56" height="56" viewBox="0 0 56 56" className="-rotate-90">
-        <defs>
-          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#16c2ad" /><stop offset="100%" stopColor="#eab64a" /></linearGradient>
-        </defs>
-        <circle cx="28" cy="28" r="24" fill="none" strokeWidth="6" className="stroke-white/15" />
-        <circle cx="28" cy="28" r="24" fill="none" strokeWidth="6" strokeLinecap="round" stroke="url(#rg)" strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)} style={{ transition: "stroke-dashoffset .6s" }} />
-      </svg>
-      <div className="absolute inset-0 grid place-items-center text-[0.8rem] font-bold text-white">{pct}%</div>
-    </div>
-  );
-}
-
-function Sidebar({ section, go, onHome }: { section: Section; go: (s: Section) => void; onHome: () => void }) {
-  useStoreVersion();
-  const pct = completionPct();
-  return (
-    <aside className="hidden lg:flex flex-col sticky top-0 h-screen w-[290px] flex-none overflow-y-auto bg-primary-600 text-primary-foreground px-4 py-6">
-      <button onClick={onHome} className="flex items-center gap-3 mb-2">
-        <div className="w-9 h-9 rounded-xl grid place-items-center bg-white/15"><Eye className="w-5 h-5" /></div>
-        <div className="text-left">
-          <div className="font-serif font-semibold text-lg leading-none">SEHRA</div>
-          <div className="text-[0.62rem] tracking-[0.18em] uppercase opacity-70">Scoping Module</div>
-        </div>
-      </button>
-      <div className="flex items-center gap-3 my-4">
-        <Ring pct={pct} />
-        <div>
-          <div className="text-sm font-semibold">Assessment progress</div>
-          <div className="text-[0.7rem] opacity-70">{pct === 100 ? "Ready to submit" : "Autosaves locally"}</div>
-        </div>
-      </div>
-      <nav className="flex flex-col gap-1 mt-2">
-        {SECTIONS.map((s) => {
-          const comp = ASSESS.find((c) => c.id === s);
-          const done = s !== "summary" && comp ? componentDone(comp) : false;
-          const active = section === s;
-          return (
-            <button key={s} onClick={() => go(s)} className={cn("flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left", active ? "bg-primary/40 text-white" : "text-white/80 hover:bg-white/10")}>
-              <span className={cn("w-5 h-5 rounded-md grid place-items-center text-[0.7rem] font-bold flex-none", active ? "bg-accent text-white" : "bg-white/10")}>{NAV_IDX[s]}</span>
-              {NAV_LABEL[s]}
-              <span className={cn("ml-auto w-1.5 h-1.5 rounded-full", done ? "bg-teal-300" : "bg-transparent")} />
+    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3.5">
+        <button onClick={() => scrollTo("overview")} className="flex items-center gap-2.5">
+          <EyeMark className="h-6 w-9" />
+          <span className="text-left leading-none">
+            <span className="block font-serif text-base tracking-tight text-foreground">SEHRA</span>
+            <span className="block text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+              Peek Vision
+            </span>
+          </span>
+        </button>
+        <nav className="ml-auto hidden items-center gap-7 md:flex">
+          {links.map(([label, id]) => (
+            <button
+              key={id}
+              onClick={() => scrollTo(id)}
+              className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
+            >
+              {label}
             </button>
-          );
-        })}
-      </nav>
-      <button onClick={onHome} className="mt-auto text-[0.8rem] text-white/60 hover:text-white text-left px-3 pt-4">← Back to overview</button>
-    </aside>
+          ))}
+        </nav>
+        <button
+          onClick={onSubmit}
+          className="hidden text-sm font-medium text-muted-foreground transition hover:text-foreground sm:block md:ml-0"
+        >
+          Submit
+        </button>
+        <button
+          onClick={onStart}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600"
+        >
+          Start
+        </button>
+      </div>
+    </header>
   );
 }
 
 export default function App() {
-  const [mode, setMode] = useState<"landing" | "assess">("landing");
   const [section, setSection] = useState<Section>("context");
   const [emailOpen, setEmailOpen] = useState(false);
 
-  const begin = () => { setMode("assess"); setSection("context"); window.scrollTo(0, 0); };
-  const go = (s: Section) => { setSection(s); window.scrollTo(0, 0); };
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
 
-  const navItems = [
-    { name: "Home", url: "#home", icon: Home, onClick: () => document.getElementById("home")?.scrollIntoView({ behavior: "smooth" }) },
-    { name: "About", url: "#about", icon: Info, onClick: () => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }) },
-    { name: "Module", url: "#module", icon: LayoutGrid, onClick: () => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" }) },
-    { name: "Begin", url: "#begin", icon: SparkIcon, onClick: begin },
-  ];
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  if (mode === "landing") {
-    return (
-      <>
-        <NavBar items={navItems} />
-        <Landing onBegin={begin} />
-        <footer className="text-center py-10 text-sm text-muted-foreground border-t border-border">
-          SEHRA Scoping Module · The Minto Method · <a className="text-primary font-medium" href="https://www.peekvision.org" target="_blank" rel="noopener">peekvision.org</a>
-        </footer>
-      </>
-    );
-  }
-
-  const idx = SECTIONS.indexOf(section);
-  const prev = SECTIONS[idx - 1];
-  const next = SECTIONS[idx + 1];
-  const comp = ASSESS.find((c) => c.id === section);
+  const openSection = (s: Section) => {
+    setSection(s);
+    requestAnimationFrame(() => scrollTo("assessment"));
+  };
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar section={section} go={go} onHome={() => setMode("landing")} />
-      <main className="flex-1 min-w-0">
-        <div className="sticky top-0 z-20 flex items-center gap-3 px-6 py-3 bg-background/80 backdrop-blur border-b border-border">
-          <button className="lg:hidden font-semibold text-primary" onClick={() => setMode("landing")}>SEHRA</button>
-          <div className="text-sm text-muted-foreground">Assessment · <b className="text-foreground">{NAV_LABEL[section]}</b></div>
-          <div className="ml-auto" />
-          <button onClick={() => setEmailOpen(true)} className="rounded-lg bg-primary text-primary-foreground px-3.5 py-2 text-[0.82rem] font-semibold">✉ Submit</button>
+    <div className="relative min-h-screen bg-background text-foreground">
+      <Header onStart={() => openSection("context")} onSubmit={() => setEmailOpen(true)} />
+
+      <Hero onBegin={() => openSection("context")} onExplore={() => scrollTo("module")} />
+
+      {/* why it matters */}
+      <section className="relative border-t border-border">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-3xl px-6 py-16 text-center"
+        >
+          <p className="font-serif text-2xl leading-snug text-foreground sm:text-[1.7rem]">
+            Most children who cannot see clearly at school are never picked up. Before anyone commits to
+            a full survey, it helps to know the basics are in place. This assessment gives you that
+            answer in about a working week.
+          </p>
+        </motion.div>
+      </section>
+
+      <ComponentOverview onOpen={openSection} />
+
+      <Features />
+
+      <AssessmentWorkspace section={section} setSection={setSection} onSubmit={() => setEmailOpen(true)} />
+
+      {/* closing */}
+      <section id="submit" className="relative border-t border-border bg-secondary/30">
+        <div className="mx-auto max-w-2xl px-6 py-20 text-center">
+          <h2 className="font-serif text-3xl text-foreground sm:text-4xl">Ready when you are</h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            Once every section has a response, send the completed assessment. It goes straight to the
+            Peek team, who will set up a time to walk through your answers.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => openSection("summary")}
+              className="rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold transition hover:border-primary hover:text-primary"
+            >
+              Review the summary
+            </button>
+            <button
+              onClick={() => setEmailOpen(true)}
+              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600"
+            >
+              Submit the assessment
+            </button>
+          </div>
         </div>
-        <div className="max-w-3xl mx-auto px-5 md:px-9 py-10 pb-28">
-          {section === "summary" ? (
-            <SummaryView onSubmit={() => setEmailOpen(true)} />
-          ) : comp ? (
-            <>
-              {section === "context" && <MetaBar />}
-              <ComponentView
-                comp={comp}
-                onPrev={prev ? () => go(prev) : undefined}
-                onNext={next ? () => go(next) : undefined}
-                prevLabel={prev ? NAV_LABEL[prev] : ""}
-                nextLabel={next ? NAV_LABEL[next] : ""}
-              />
-            </>
-          ) : null}
-        </div>
-      </main>
+      </section>
+
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+        SEHRA Scoping Module · Built for{" "}
+        <a className="font-medium text-primary hover:underline" href="https://www.peekvision.org" target="_blank" rel="noopener">
+          Peek Vision
+        </a>
+      </footer>
+
       <EmailModal open={emailOpen} onClose={() => setEmailOpen(false)} />
     </div>
   );

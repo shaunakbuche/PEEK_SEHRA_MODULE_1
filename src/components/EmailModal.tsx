@@ -20,10 +20,10 @@ export function EmailModal({ open, onClose }: { open: boolean; onClose: () => vo
     setSending(true); setStatus(null);
     try {
       const res = await sendOnline(to, from);
-      if (res.ok) setStatus({ kind: "ok", msg: `Sent to ${res.primary}. ${to.split(/[,;\s]+/).filter(Boolean).length > 1 ? "Other recipients are listed inside the report — or use 'Open in my email app'." : ""}` });
+      if (res.ok) setStatus({ kind: "ok", msg: `Sent to ${res.primary}. ${to.split(/[,;\s]+/).filter(Boolean).length > 1 ? "Any other recipients are listed inside the report. You can also use 'Open in my email app'." : ""}` });
       else throw new Error(res.message || "error");
     } catch {
-      setStatus({ kind: "info", msg: "Couldn't send automatically (the inbox may need a one-time FormSubmit activation, or you're offline). Use 'Open in my email app' or 'Download report' — both contain the full module." });
+      setStatus({ kind: "info", msg: "That did not send on its own. The inbox may need a one-time activation, or you may be offline. Use 'Open in my email app' or 'Download report' instead. Both hold the full assessment." });
     } finally {
       setSending(false);
     }
@@ -34,8 +34,8 @@ export function EmailModal({ open, onClose }: { open: boolean; onClose: () => vo
       <div className="bg-card rounded-[20px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl">
         <div className="px-6 pt-6 pb-4 border-b border-border sticky top-0 bg-card z-10">
           <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-secondary grid place-items-center text-muted-foreground hover:bg-accent hover:text-accent-foreground transition"><X className="w-4 h-4" /></button>
-          <h3 className="font-serif text-2xl m-0">Submit the completed module</h3>
-          <p className="mt-1.5 text-sm text-muted-foreground">Delivers your full Scoping Module — every answer, table, indicator and reflection — by email.</p>
+          <h3 className="m-0 font-serif text-2xl">Submit the assessment</h3>
+          <p className="mt-1.5 text-sm text-muted-foreground">Sends your full assessment by email: every answer, table, indicator and note.</p>
         </div>
         <div className="px-6 py-5">
           <div className="mb-4">

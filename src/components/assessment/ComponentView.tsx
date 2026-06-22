@@ -13,11 +13,11 @@ export function ComponentView({ comp, onPrev, onNext, prevLabel, nextLabel }: {
   return (
     <div>
       <div className="mb-7">
-        <div className="text-[0.72rem] font-bold uppercase tracking-[0.2em] text-accent">
+        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-primary">
           {isContext ? "Context" : `Component ${comp.number}`}
         </div>
-        <h2 className="font-serif text-3xl md:text-4xl mt-2 tracking-tight">{comp.title}</h2>
-        <p className="mt-3.5 text-[1.02rem] text-muted-foreground max-w-2xl border-l-[3px] border-primary pl-4">{comp.purpose}</p>
+        <h2 className="mt-2 font-serif text-3xl tracking-tight md:text-4xl">{comp.title}</h2>
+        <p className="mt-3.5 max-w-2xl text-[1.02rem] leading-relaxed text-muted-foreground">{comp.purpose}</p>
       </div>
 
       {comp.subsections.map((s, i) => (

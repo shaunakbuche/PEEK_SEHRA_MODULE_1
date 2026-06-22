@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useField, setField, subStatus, useStoreVersion } from "@/lib/store";
 import { SCALE_KEY, type Question, type SubSection } from "@/data/sehra";
 
-function Remarks({ id, placeholder = "Remarks…", lg }: { id: string; placeholder?: string; lg?: boolean }) {
+function Note({ id, placeholder = "Add a note (optional)", lg }: { id: string; placeholder?: string; lg?: boolean }) {
   const v = useField(id);
   return (
     <textarea
@@ -12,8 +12,8 @@ function Remarks({ id, placeholder = "Remarks…", lg }: { id: string; placehold
       onChange={(e) => setField(id, e.target.value)}
       placeholder={placeholder}
       className={cn(
-        "w-full mt-2 rounded-xl border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 resize-y",
-        lg ? "min-h-[90px]" : "min-h-[46px]"
+        "mt-2.5 w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary",
+        lg ? "min-h-[88px]" : "min-h-[44px]"
       )}
     />
   );
@@ -21,13 +21,16 @@ function Remarks({ id, placeholder = "Remarks…", lg }: { id: string; placehold
 
 function Lines({ lines }: { lines: string[] }) {
   return (
-    <div className="my-3 rounded-xl bg-secondary/60 px-4 py-3">
-      <div className="text-[0.65rem] font-bold uppercase tracking-wider text-primary mb-2">Lines of enquiry</div>
-      <ul className="list-disc pl-5 space-y-1">
-        {lines.map((l, i) => <li key={i} className="text-[0.82rem] text-muted-foreground">{l}</li>)}
-      </ul>
-    </div>
+    <ul className="mt-3 space-y-1 border-l-2 border-border pl-4">
+      {lines.map((l, i) => (
+        <li key={i} className="text-[0.82rem] leading-relaxed text-muted-foreground">{l}</li>
+      ))}
+    </ul>
   );
+}
+
+function QuestionShell({ children }: { children: React.ReactNode }) {
+  return <div className="py-5">{children}</div>;
 }
 
 function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
@@ -36,8 +39,8 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
   if (q.thirdOption) opts.push([q.thirdOption, "na"]);
   if (q.noOption) opts.push([q.noOption, "na"]);
   return (
-    <div className="py-4 border-b border-dashed border-border last:border-0">
-      <div className="text-[0.95rem] font-medium mb-2.5">{q.text}</div>
+    <QuestionShell>
+      <div className="mb-3 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
       <div className="flex flex-wrap gap-2">
         {opts.map(([lab, kind]) => {
           const active = v === lab;
@@ -46,11 +49,11 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
               key={lab}
               onClick={() => setField(q.id + "__yn", active ? "" : lab)}
               className={cn(
-                "px-4 py-1.5 rounded-lg border text-[0.82rem] font-semibold transition",
-                active && kind === "yes" && "bg-primary text-primary-foreground border-primary",
-                active && kind === "no" && "bg-accent text-accent-foreground border-accent",
-                active && kind === "na" && "bg-muted-foreground text-background border-muted-foreground",
-                !active && "bg-card text-muted-foreground border-input hover:border-primary"
+                "rounded-md border px-4 py-1.5 text-[0.82rem] font-medium transition",
+                active && kind === "yes" && "border-primary bg-primary text-primary-foreground",
+                active && kind === "no" && "border-foreground bg-foreground text-background",
+                active && kind === "na" && "border-muted-foreground bg-muted text-foreground",
+                !active && "border-input text-muted-foreground hover:border-primary hover:text-foreground"
               )}
             >
               {lab}
@@ -59,52 +62,51 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
         })}
       </div>
       {q.lines && <Lines lines={q.lines} />}
-      <Remarks id={q.id + "__rem"} />
-    </div>
+      <Note id={q.id + "__rem"} />
+    </QuestionShell>
   );
 }
 
 function TextQ({ q }: { q: Extract<Question, { type: "text" }> }) {
   return (
-    <div className="py-4 border-b border-dashed border-border last:border-0">
-      <div className="text-[0.95rem] font-medium mb-1">{q.text}</div>
-      <Remarks id={q.id} placeholder="Type your response…" lg />
-    </div>
+    <QuestionShell>
+      <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <Note id={q.id} placeholder="Type your answer" lg />
+    </QuestionShell>
   );
 }
 
 function FieldQ({ q }: { q: Extract<Question, { type: "field" }> }) {
   const v = useField(q.id);
   return (
-    <div className="py-4 border-b border-dashed border-border last:border-0">
-      <div className="flex items-center gap-3 flex-wrap">
-        <label className="text-[0.95rem] font-medium">{q.text}</label>
+    <QuestionShell>
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-[0.95rem] text-foreground">{q.text}</label>
         <input
           value={v}
           onChange={(e) => setField(q.id, e.target.value)}
-          placeholder="…"
-          className="flex-1 min-w-[220px] rounded-xl border border-input bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="min-w-[200px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary"
         />
       </div>
-    </div>
+    </QuestionShell>
   );
 }
 
 function GroupItem({ id, label }: { id: string; label: string }) {
   const v = useField(id);
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg bg-secondary/60 px-3 py-2">
-      <div className="text-[0.88rem]">{label}</div>
-      <div className="flex gap-1.5">
+    <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+      <div className="text-[0.85rem] text-foreground">{label}</div>
+      <div className="flex flex-none gap-1.5">
         {(["Yes", "No"] as const).map((opt) => (
           <button
             key={opt}
             onClick={() => setField(id, v === opt ? "" : opt)}
             className={cn(
-              "px-3 py-1 rounded-md border text-[0.72rem] font-semibold transition",
-              v === opt && opt === "Yes" && "bg-primary text-primary-foreground border-primary",
-              v === opt && opt === "No" && "bg-accent text-accent-foreground border-accent",
-              v !== opt && "bg-card text-muted-foreground border-input hover:border-primary"
+              "rounded px-3 py-1 text-[0.72rem] font-medium transition",
+              v === opt && opt === "Yes" && "bg-primary text-primary-foreground",
+              v === opt && opt === "No" && "bg-foreground text-background",
+              v !== opt && "text-muted-foreground hover:bg-secondary"
             )}
           >
             {opt}
@@ -117,14 +119,14 @@ function GroupItem({ id, label }: { id: string; label: string }) {
 
 function GroupQ({ q }: { q: Extract<Question, { type: "group" }> }) {
   return (
-    <div className="py-4 border-b border-dashed border-border last:border-0">
-      <div className="text-[0.95rem] font-medium mb-2.5">{q.text}</div>
-      <div className="grid gap-1.5">
+    <QuestionShell>
+      <div className="mb-3 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <div className="grid gap-2 sm:grid-cols-2">
         {q.items.map((it, i) => <GroupItem key={i} id={`${q.id}__${i}`} label={it} />)}
       </div>
       {q.lines && <Lines lines={q.lines} />}
-      <Remarks id={q.id + "__rem"} />
-    </div>
+      <Note id={q.id + "__rem"} />
+    </QuestionShell>
   );
 }
 
@@ -141,31 +143,31 @@ function Cell({ id }: { id: string }) {
 
 function TableQ({ q }: { q: Extract<Question, { type: "table" }> }) {
   return (
-    <div className="py-4 border-b border-dashed border-border last:border-0">
-      <div className="text-[0.95rem] font-medium mb-2">{q.text}</div>
-      <div className="tbl-scroll overflow-x-auto rounded-xl border border-border">
-        <table className="border-collapse w-full min-w-[520px]">
+    <QuestionShell>
+      <div className="mb-2.5 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <div className="tbl-scroll overflow-x-auto rounded-md border border-border">
+        <table className="w-full min-w-[520px] border-collapse">
           <thead>
             <tr>
-              <th className="bg-primary-600 text-primary-foreground text-[0.72rem] font-semibold p-2.5 text-left"></th>
+              <th className="bg-secondary p-2.5 text-left text-[0.72rem] font-semibold text-muted-foreground"></th>
               {q.cols.map((c, i) => (
-                <th key={i} className="bg-primary-600 text-[0.72rem] font-semibold p-2.5 text-left" style={{ color: "hsl(var(--primary-foreground))", background: "hsl(var(--primary-600))" }}>{c}</th>
+                <th key={i} className="bg-secondary p-2.5 text-left text-[0.72rem] font-semibold text-foreground">{c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {q.rows.map((r, ri) => (
               <tr key={ri}>
-                <th className="bg-secondary/70 text-foreground font-semibold text-[0.8rem] p-2.5 text-left align-top min-w-[150px] border border-border">{r}</th>
+                <th className="border-t border-border bg-secondary/40 p-2.5 text-left align-top text-[0.8rem] font-medium text-foreground">{r}</th>
                 {q.cols.map((_, ci) => (
-                  <td key={ci} className="border border-border align-top p-0"><Cell id={`${q.id}__${ri}_${ci}`} /></td>
+                  <td key={ci} className="border-l border-t border-border p-0 align-top"><Cell id={`${q.id}__${ri}_${ci}`} /></td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
+    </QuestionShell>
   );
 }
 
@@ -173,24 +175,29 @@ function ScaleBlock({ compId }: { compId: string }) {
   const v = Number(useField(`${compId}__scale`)) || 0;
   const pos = v ? (v - 0.5) * 25 : 0;
   return (
-    <div className="rounded-2xl border border-border bg-gradient-to-b from-secondary/40 to-card p-5 my-4">
-      <h4 className="font-serif text-lg m-0">Indicator analysis</h4>
-      <p className="text-[0.85rem] text-muted-foreground mb-4">Use your judgement, after assessment, to position the pointer — an overall read of this component's potential.</p>
-      <div className="relative h-2.5 rounded-full my-1.5 mb-4" style={{ background: "linear-gradient(90deg,#d8593f,#e6a23c,#4fb07f,#0aa18f)", opacity: v ? 1 : 0.35 }}>
+    <div className="mb-6 rounded-lg border border-border bg-secondary/30 p-5">
+      <h4 className="font-serif text-lg text-foreground">Where does this area sit?</h4>
+      <p className="mb-4 mt-1 text-[0.85rem] text-muted-foreground">
+        After working through this area, set the pointer to your overall read of how ready it is.
+      </p>
+      <div
+        className="relative my-1.5 mb-4 h-2 rounded-full"
+        style={{ background: "linear-gradient(90deg,#d8593f,#e6a23c,#4fb07f,#0aa18f)", opacity: v ? 1 : 0.3 }}
+      >
         <span
-          className="absolute top-1/2 w-5 h-5 rounded-full bg-white border-[3px] border-primary-600 shadow transition-all"
+          className="absolute top-1/2 h-5 w-5 rounded-full border-[3px] border-primary bg-white shadow transition-all"
           style={{ left: `${pos}%`, transform: `translate(-50%,-50%) scale(${v ? 1 : 0})` }}
         />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {SCALE_KEY.map((s) => {
           const active = v === s.value;
           return (
-            <button key={s.value} onClick={() => setField(`${compId}__scale`, active ? "" : String(s.value))} className="text-center group">
-              <div className={cn("h-2 rounded-full mb-2.5 transition-all", active ? "scale-y-[1.6]" : "opacity-40 group-hover:opacity-80")}
+            <button key={s.value} onClick={() => setField(`${compId}__scale`, active ? "" : String(s.value))} className="group text-left">
+              <div className={cn("mb-2 h-1.5 rounded-full transition-all", active ? "scale-y-150" : "opacity-40 group-hover:opacity-80")}
                 style={{ background: ["#d8593f", "#e6a23c", "#4fb07f", "#0aa18f"][s.value - 1] }} />
-              <div className={cn("text-[0.8rem] font-bold", active ? "text-foreground" : "text-muted-foreground")}>{s.label}</div>
-              <div className="text-[0.7rem] text-muted-foreground mt-1 leading-snug">{s.desc}</div>
+              <div className={cn("text-[0.78rem] font-semibold", active ? "text-foreground" : "text-muted-foreground")}>{s.label}</div>
+              <div className="mt-0.5 text-[0.7rem] leading-snug text-muted-foreground">{s.desc}</div>
             </button>
           );
         })}
@@ -203,30 +210,24 @@ function ReflectionCell({ id, placeholder }: { id: string; placeholder: string }
   const v = useField(id);
   return (
     <textarea value={v} onChange={(e) => setField(id, e.target.value)} placeholder={placeholder}
-      className="w-full mb-2 rounded-xl border border-input bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[46px] resize-y" />
+      className="mb-2 min-h-[44px] w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary" />
   );
 }
 
 function ReflectionsQ({ q }: { q: Extract<Question, { type: "reflections" }> }) {
   return (
-    <div className="py-4">
-      <div className="grid md:grid-cols-2 gap-4">
+    <QuestionShell>
+      <div className="grid gap-6 md:grid-cols-2">
         <div>
-          <h4 className="text-[0.92rem] font-semibold text-accent mb-2.5 flex items-center gap-2">
-            <span className="text-[0.68rem] px-2 py-0.5 rounded-full bg-accent/15 text-accent font-bold">Challenges</span>
-            Points that may make implementation challenging
-          </h4>
-          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__challenge_${i}`} placeholder={`${i + 1}.`} />)}
+          <h4 className="mb-2.5 text-[0.9rem] font-semibold text-foreground">What might make this difficult</h4>
+          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__challenge_${i}`} placeholder={`Point ${i + 1}`} />)}
         </div>
         <div>
-          <h4 className="text-[0.92rem] font-semibold text-primary mb-2.5 flex items-center gap-2">
-            <span className="text-[0.68rem] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">Supports</span>
-            Points that support implementation
-          </h4>
-          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__support_${i}`} placeholder={`${i + 1}.`} />)}
+          <h4 className="mb-2.5 text-[0.9rem] font-semibold text-foreground">What is already working in your favour</h4>
+          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__support_${i}`} placeholder={`Point ${i + 1}`} />)}
         </div>
       </div>
-    </div>
+    </QuestionShell>
   );
 }
 
@@ -238,7 +239,7 @@ function renderQuestion(q: Question, key: number) {
     case "group": return <GroupQ key={key} q={q} />;
     case "table": return <TableQ key={key} q={q} />;
     case "reflections": return <ReflectionsQ key={key} q={q} />;
-    case "note": return <div key={key} className="text-[0.9rem] italic text-muted-foreground py-2">{q.text}</div>;
+    case "note": return <p key={key} className="pt-4 text-[0.9rem] italic text-muted-foreground">{q.text}</p>;
     default: return null;
   }
 }
@@ -249,26 +250,27 @@ export function SubSectionView({ sub, compId, defaultOpen }: { sub: SubSection; 
   const st = subStatus(sub.questions);
   const isReflection = sub.questions.some((q) => q.type === "reflections");
   return (
-    <div className={cn("mb-3.5 rounded-2xl border bg-card shadow-sm overflow-hidden transition", st.state === "complete" ? "border-primary/50" : "border-border")}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3.5 px-5 py-4 text-left">
-        <span className={cn("w-6 h-6 rounded-full grid place-items-center border-2 transition flex-none",
-          st.state === "complete" && "bg-primary border-primary text-primary-foreground",
-          st.state === "partial" && "border-accent",
+    <div className={cn("mb-3 overflow-hidden rounded-lg border bg-card transition", st.state === "complete" ? "border-primary/40" : "border-border")}>
+      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left">
+        <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-full border transition",
+          st.state === "complete" && "border-primary bg-primary text-primary-foreground",
+          st.state === "partial" && "border-primary/50",
           st.state === "" && "border-input")}>
-          {st.state === "complete" && <Check className="w-3.5 h-3.5" />}
-          {st.state === "partial" && <span className="w-2 h-2 rounded-full bg-accent" />}
+          {st.state === "complete" && <Check className="h-3 w-3" />}
+          {st.state === "partial" && <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />}
         </span>
-        <span className="font-serif font-bold text-accent min-w-[40px]">{sub.id}</span>
-        <span className="font-semibold text-[1.02rem]">{sub.title}</span>
+        <span className="font-medium text-foreground">{sub.title}</span>
         <span className="ml-auto flex items-center gap-3">
-          {st.total > 0 && <span className="text-[0.72rem] text-muted-foreground bg-secondary/70 px-2.5 py-0.5 rounded-full">{st.done}/{st.total}</span>}
-          <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition", open && "rotate-180")} />
+          {st.total > 0 && <span className="text-[0.72rem] tabular-nums text-muted-foreground">{st.done}/{st.total}</span>}
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition", open && "rotate-180")} />
         </span>
       </button>
       {open && (
-        <div className="px-5 pb-5 border-t border-border">
-          {isReflection && <ScaleBlock compId={compId} />}
-          {sub.questions.map((q, i) => renderQuestion(q, i))}
+        <div className="border-t border-border px-5 pb-5">
+          {isReflection && <div className="pt-5"><ScaleBlock compId={compId} /></div>}
+          <div className="divide-y divide-border/70">
+            {sub.questions.map((q, i) => renderQuestion(q, i))}
+          </div>
         </div>
       )}
     </div>

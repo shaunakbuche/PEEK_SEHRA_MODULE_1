@@ -15,7 +15,7 @@ function answerFor(q: Question): Answer {
     case "yn": {
       const a = getField(q.id + "__yn"), r = getField(q.id + "__rem");
       if (!a && !r) return null;
-      return { q: q.text, a: a || "—", r };
+      return { q: q.text, a: a || "Not answered", r };
     }
     case "text":
     case "field": {
@@ -32,7 +32,7 @@ function answerFor(q: Question): Answer {
       const cells: string[] = [];
       q.rows.forEach((row, ri) => q.cols.forEach((col, ci) => {
         const v = getField(`${q.id}__${ri}_${ci}`);
-        if (v && v.trim()) cells.push(`${row} — ${col}: ${v}`);
+        if (v && v.trim()) cells.push(`${row} / ${col}: ${v}`);
       }));
       return cells.length ? { q: q.text, list: cells } : null;
     }
@@ -40,7 +40,7 @@ function answerFor(q: Question): Answer {
       const ch = [0, 1, 2].map((i) => getField(`${q.id}__challenge_${i}`)).filter((x) => x && x.trim());
       const su = [0, 1, 2].map((i) => getField(`${q.id}__support_${i}`)).filter((x) => x && x.trim());
       if (!ch.length && !su.length) return null;
-      return { q: "Reflections & Implications", challenges: ch, supports: su };
+      return { q: "Reflections and implications", challenges: ch, supports: su };
     }
     default:
       return null;
@@ -56,14 +56,14 @@ export function compileReport(): { text: string; html: string } {
   };
   const T: string[] = [];
   let H = "";
-  T.push("SEHRA SCOPING MODULE — THE MINTO METHOD");
+  T.push("SEHRA SCOPING MODULE");
   T.push("=".repeat(48));
-  Object.entries(meta).forEach(([k, v]) => T.push(`${k}: ${v || "—"}`));
+  Object.entries(meta).forEach(([k, v]) => T.push(`${k}: ${v || "Not given"}`));
   T.push(`Overall completion: ${completionPct()}%`);
   T.push("");
-  H += `<h1 style="font-family:Georgia,serif;color:#0a766b">SEHRA Scoping Module — The Minto Method</h1>
+  H += `<h1 style="font-family:Georgia,serif;color:#0a766b">SEHRA Scoping Module</h1>
     <table style="border-collapse:collapse;margin:0 0 18px">${Object.entries(meta)
-      .map(([k, v]) => `<tr><td style="padding:2px 14px 2px 0;color:#557571">${k}</td><td><b>${esc(v || "—")}</b></td></tr>`)
+      .map(([k, v]) => `<tr><td style="padding:2px 14px 2px 0;color:#557571">${k}</td><td><b>${esc(v || "Not given")}</b></td></tr>`)
       .join("")}<tr><td style="padding:2px 14px 2px 0;color:#557571">Completion</td><td><b>${completionPct()}%</b></td></tr></table>`;
 
   ASSESS.forEach((comp) => {
@@ -98,7 +98,7 @@ export function compileReport(): { text: string; html: string } {
           H += `<p style="margin:6px 0 2px">${esc(a.q)}</p><ul>${a.list.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>${a.r ? `<p style="color:#557571"><i>Remarks: ${esc(a.r)}</i></p>` : ""}`;
         } else {
           T.push(`    ${a.q}`, `      ${a.a}${a.r ? " | Remarks: " + a.r : ""}`);
-          H += `<p style="margin:6px 0 2px">${esc(a.q)}<br><b>${esc(a.a)}</b>${a.r ? ` <span style="color:#557571">— ${esc(a.r)}</span>` : ""}</p>`;
+          H += `<p style="margin:6px 0 2px">${esc(a.q)}<br><b>${esc(a.a)}</b>${a.r ? ` <span style="color:#557571">Note: ${esc(a.r)}</span>` : ""}</p>`;
         }
       });
     });
@@ -119,10 +119,10 @@ export function compileReport(): { text: string; html: string } {
 }
 
 export function subjectLine(): string {
-  return `SEHRA Scoping Module — ${getField("meta_country") || "—"} (${completionPct()}% complete)`;
+  return `SEHRA Scoping Module: ${getField("meta_country") || "area not set"} (${completionPct()}% complete)`;
 }
 
-/** Default destination — the Peek SEHRA team, per the module. */
+/** Default destination: the Peek SEHRA team. */
 export const DEFAULT_RECIPIENTS = "priya@peekvision.org, sehra@peekvision.org";
 
 export async function sendOnline(recipientsRaw: string, fromName: string): Promise<{ ok: boolean; primary: string; message?: string }> {
@@ -148,7 +148,7 @@ export function sendMailto(recipientsRaw: string) {
   const recipients = recipientsRaw.split(/[,;\s]+/).filter(Boolean).join(",");
   const { text } = compileReport();
   const body = encodeURIComponent(
-    text.slice(0, 1800) + (text.length > 1800 ? "\n\n[Report truncated for email — full version is in the downloaded file.]" : "")
+    text.slice(0, 1800) + (text.length > 1800 ? "\n\n[Shortened for email. The full version is in the downloaded file.]" : "")
   );
   downloadReport(true);
   window.location.href = `mailto:${recipients}?subject=${encodeURIComponent(subjectLine())}&body=${body}`;
