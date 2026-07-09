@@ -2,5 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/admin/reports/generate.ts": { "maxDuration": 60 },
+    "api/admin/reports/[id]/approve.ts": { "maxDuration": 60 }
+  }
 }
