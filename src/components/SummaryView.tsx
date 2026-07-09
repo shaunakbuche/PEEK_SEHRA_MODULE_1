@@ -94,8 +94,8 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
 
       <div className="rounded-lg border border-border bg-secondary/30 p-6">
         <strong className="text-foreground">That is the whole assessment.</strong>
-        <p className="mb-4 mt-2 text-sm text-muted-foreground">Submit it and it goes to the Peek team by email. They will get in touch to arrange a time to go through your answers together.</p>
-        <Button size="lg" onClick={onSubmit}>Submit the assessment</Button>
+        <p className="mb-4 mt-2 text-sm text-muted-foreground">Submit it and the Peek team will review your answers, prepare your scoping report, and publish it back to this workspace once it is approved.</p>
+        <Button size="lg" onClick={onSubmit}>Submit to Peek</Button>
       </div>
     </div>
   );

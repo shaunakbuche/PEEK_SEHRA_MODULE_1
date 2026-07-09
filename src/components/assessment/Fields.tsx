@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, ChevronDown, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useField, setField, subStatus, useStoreVersion } from "@/lib/store";
 import { SCALE_KEY, type Question, type SubSection } from "@/data/sehra";
@@ -12,20 +13,48 @@ function Note({ id, placeholder = "Add a note (optional)", lg }: { id: string; p
       onChange={(e) => setField(id, e.target.value)}
       placeholder={placeholder}
       className={cn(
-        "mt-2.5 w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary",
+        "mt-2.5 w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/10",
         lg ? "min-h-[88px]" : "min-h-[44px]"
       )}
     />
   );
 }
 
+function Help({ text }: { text?: string }) {
+  if (!text) return null;
+  return (
+    <p className="mt-1 flex items-start gap-1.5 text-[0.78rem] leading-relaxed text-muted-foreground/80">
+      <HelpCircle className="mt-0.5 h-3.5 w-3.5 flex-none" />
+      {text}
+    </p>
+  );
+}
+
 function Lines({ lines }: { lines: string[] }) {
   return (
-    <ul className="mt-3 space-y-1 border-l-2 border-border pl-4">
+    <ul className="mt-3 space-y-1 border-l-2 border-primary/25 pl-4">
       {lines.map((l, i) => (
         <li key={i} className="text-[0.82rem] leading-relaxed text-muted-foreground">{l}</li>
       ))}
     </ul>
+  );
+}
+
+function Reveal({ show, children }: { show: boolean; children: React.ReactNode }) {
+  return (
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="overflow-hidden"
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -40,8 +69,9 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
   if (q.noOption) opts.push([q.noOption, "na"]);
   return (
     <QuestionShell>
-      <div className="mb-3 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
-      <div className="flex flex-wrap gap-2">
+      <div className="text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <Help text={q.help} />
+      <div className="mt-3 flex flex-wrap gap-2">
         {opts.map(([lab, kind]) => {
           const active = v === lab;
           return (
@@ -49,11 +79,11 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
               key={lab}
               onClick={() => setField(q.id + "__yn", active ? "" : lab)}
               className={cn(
-                "rounded-md border px-4 py-1.5 text-[0.82rem] font-medium transition",
-                active && kind === "yes" && "border-primary bg-primary text-primary-foreground",
-                active && kind === "no" && "border-foreground bg-foreground text-background",
+                "rounded-md border px-4 py-1.5 text-[0.82rem] font-medium transition-all duration-150",
+                active && kind === "yes" && "border-primary bg-primary text-primary-foreground shadow-sm",
+                active && kind === "no" && "border-foreground bg-foreground text-background shadow-sm",
                 active && kind === "na" && "border-muted-foreground bg-muted text-foreground",
-                !active && "border-input text-muted-foreground hover:border-primary hover:text-foreground"
+                !active && "border-input text-muted-foreground hover:-translate-y-px hover:border-primary hover:text-foreground"
               )}
             >
               {lab}
@@ -61,8 +91,11 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
           );
         })}
       </div>
-      {q.lines && <Lines lines={q.lines} />}
-      <Note id={q.id + "__rem"} />
+      {/* follow-ups appear only once the question is answered */}
+      <Reveal show={!!v}>
+        {q.lines && <Lines lines={q.lines} />}
+        <Note id={q.id + "__rem"} />
+      </Reveal>
     </QuestionShell>
   );
 }
@@ -71,6 +104,7 @@ function TextQ({ q }: { q: Extract<Question, { type: "text" }> }) {
   return (
     <QuestionShell>
       <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <Help text={q.help} />
       <Note id={q.id} placeholder="Type your answer" lg />
     </QuestionShell>
   );
@@ -85,9 +119,10 @@ function FieldQ({ q }: { q: Extract<Question, { type: "field" }> }) {
         <input
           value={v}
           onChange={(e) => setField(q.id, e.target.value)}
-          className="min-w-[200px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary"
+          className="min-w-[200px] flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
         />
       </div>
+      <Help text={q.help} />
     </QuestionShell>
   );
 }
@@ -95,7 +130,10 @@ function FieldQ({ q }: { q: Extract<Question, { type: "field" }> }) {
 function GroupItem({ id, label }: { id: string; label: string }) {
   const v = useField(id);
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+    <div className={cn(
+      "flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors",
+      v ? "border-primary/30 bg-primary/[0.03]" : "border-border"
+    )}>
       <div className="text-[0.85rem] text-foreground">{label}</div>
       <div className="flex flex-none gap-1.5">
         {(["Yes", "No"] as const).map((opt) => (
@@ -118,10 +156,12 @@ function GroupItem({ id, label }: { id: string; label: string }) {
 }
 
 function GroupQ({ q }: { q: Extract<Question, { type: "group" }> }) {
+  useStoreVersion();
   return (
     <QuestionShell>
-      <div className="mb-3 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <Help text={q.help} />
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {q.items.map((it, i) => <GroupItem key={i} id={`${q.id}__${i}`} label={it} />)}
       </div>
       {q.lines && <Lines lines={q.lines} />}
@@ -136,7 +176,7 @@ function Cell({ id }: { id: string }) {
     <input
       value={v}
       onChange={(e) => setField(id, e.target.value)}
-      className="w-full min-w-[90px] bg-transparent px-2.5 py-2 text-[0.85rem] outline-none focus:bg-primary/5"
+      className="w-full min-w-[90px] bg-transparent px-2.5 py-2 text-[0.85rem] outline-none transition-colors focus:bg-primary/5"
     />
   );
 }
@@ -144,8 +184,9 @@ function Cell({ id }: { id: string }) {
 function TableQ({ q }: { q: Extract<Question, { type: "table" }> }) {
   return (
     <QuestionShell>
-      <div className="mb-2.5 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
-      <div className="tbl-scroll overflow-x-auto rounded-md border border-border">
+      <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <Help text={q.help} />
+      <div className="tbl-scroll mt-2.5 overflow-x-auto rounded-md border border-border">
         <table className="w-full min-w-[520px] border-collapse">
           <thead>
             <tr>
@@ -210,7 +251,7 @@ function ReflectionCell({ id, placeholder }: { id: string; placeholder: string }
   const v = useField(id);
   return (
     <textarea value={v} onChange={(e) => setField(id, e.target.value)} placeholder={placeholder}
-      className="mb-2 min-h-[44px] w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary" />
+      className="mb-2 min-h-[44px] w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/10" />
   );
 }
 
@@ -250,8 +291,12 @@ export function SubSectionView({ sub, compId, defaultOpen }: { sub: SubSection; 
   const st = subStatus(sub.questions);
   const isReflection = sub.questions.some((q) => q.type === "reflections");
   return (
-    <div className={cn("mb-3 overflow-hidden rounded-lg border bg-card transition", st.state === "complete" ? "border-primary/40" : "border-border")}>
-      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left">
+    <div className={cn(
+      "mb-3 overflow-hidden rounded-lg border bg-card transition-all duration-200",
+      st.state === "complete" ? "border-primary/40" : "border-border",
+      open && "shadow-[0_10px_30px_-18px_rgba(15,118,107,0.25)]"
+    )}>
+      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-secondary/30">
         <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-full border transition",
           st.state === "complete" && "border-primary bg-primary text-primary-foreground",
           st.state === "partial" && "border-primary/50",
@@ -262,7 +307,7 @@ export function SubSectionView({ sub, compId, defaultOpen }: { sub: SubSection; 
         <span className="font-medium text-foreground">{sub.title}</span>
         <span className="ml-auto flex items-center gap-3">
           {st.total > 0 && <span className="text-[0.72rem] tabular-nums text-muted-foreground">{st.done}/{st.total}</span>}
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition", open && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", open && "rotate-180")} />
         </span>
       </button>
       {open && (

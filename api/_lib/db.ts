@@ -1,0 +1,69 @@
+import { db } from "@vercel/postgres";
+
+/** Parametrized query helper. */
+export async function q<T = any>(text: string, params: unknown[] = []): Promise<T[]> {
+  const res = await db.query(text, params as any[]);
+  return res.rows as T[];
+}
+
+export async function qOne<T = any>(text: string, params: unknown[] = []): Promise<T | null> {
+  const rows = await q<T>(text, params);
+  return rows[0] ?? null;
+}
+
+const SCHEMA_SQL = `
+CREATE TABLE IF NOT EXISTS organizations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  country text NOT NULL DEFAULT '',
+  region text NOT NULL DEFAULT '',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  email text NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  role text NOT NULL CHECK (role IN ('school','admin')),
+  full_name text NOT NULL DEFAULT '',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS assessments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft','submitted','in_review','approved','returned')),
+  answers jsonb NOT NULL DEFAULT '{}',
+  return_note text NOT NULL DEFAULT '',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  submitted_at timestamptz
+);
+CREATE UNIQUE INDEX IF NOT EXISTS assessments_org_unique ON assessments(org_id);
+CREATE TABLE IF NOT EXISTS reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  assessment_id uuid NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'generated'
+    CHECK (status IN ('generated','edited','approved')),
+  content jsonb NOT NULL,
+  ai_model text NOT NULL DEFAULT '',
+  pdf_url text,
+  docx_url text,
+  approved_by uuid REFERENCES users(id),
+  approved_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS reports_assessment_unique ON reports(assessment_id);
+CREATE TABLE IF NOT EXISTS report_edits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  report_id uuid NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+  editor_id uuid NOT NULL REFERENCES users(id),
+  diff jsonb NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+`;
+
+export async function ensureSchema() {
+  await db.query(SCHEMA_SQL);
+}

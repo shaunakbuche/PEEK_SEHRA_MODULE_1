@@ -82,7 +82,7 @@ export function Hero({ onBegin, onExplore }: { onBegin: () => void; onExplore: (
           >
             This is a short scoping assessment. It looks at the policies, services, people and
             supplies already in place, so you can judge whether a full school survey is worth running.
-            Fill it in online and send it to the Peek team when you are done.
+            Fill it in online, submit it to the Peek team, and receive your approved report right here.
           </motion.p>
 
           <motion.div

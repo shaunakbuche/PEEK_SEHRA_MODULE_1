@@ -70,7 +70,25 @@
 
 html { scroll-behavior: smooth; }
 
+/* Selection + focus, tuned to the teal brand */
+::selection { background: hsl(var(--primary) / 0.18); }
+:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Quiet, consistent scrollbars */
+* { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+*::-webkit-scrollbar { height: 8px; width: 8px; }
+*::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+*::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+*::-webkit-scrollbar-track { background: transparent; }
+
 .text-spektr-cyan-50 { color: hsl(var(--foreground)); }
 
 .tbl-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
 .tbl-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+
+/* Number inputs and date fields inherit the type scale */
+input, textarea, select, button { font-family: inherit; }

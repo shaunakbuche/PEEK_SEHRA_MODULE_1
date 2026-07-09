@@ -1,0 +1,106 @@
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { useSaveState } from "@/lib/store";
+import { CloudUpload, Check, LogOut, WifiOff } from "lucide-react";
+import type { AssessmentStatus } from "@/lib/api";
+
+export function EyeMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 36 22" className={className} fill="none" aria-hidden>
+      <path
+        d="M2 11C7 3.5 14 1.5 18 1.5C22 1.5 29 3.5 34 11C29 18.5 22 20.5 18 20.5C14 20.5 7 18.5 2 11Z"
+        stroke="hsl(var(--primary))"
+        strokeWidth="1.6"
+      />
+      <circle cx="18" cy="11" r="5" fill="hsl(var(--primary))" />
+      <circle cx="18" cy="11" r="1.8" fill="hsl(var(--background))" />
+      <circle cx="16.2" cy="9.2" r="0.9" fill="hsl(var(--background))" opacity="0.7" />
+    </svg>
+  );
+}
+
+export function Wordmark({ sub = "Peek Vision" }: { sub?: string }) {
+  return (
+    <span className="flex items-center gap-2.5">
+      <EyeMark className="h-6 w-9" />
+      <span className="text-left leading-none">
+        <span className="block font-serif text-base tracking-tight text-foreground">SEHRA</span>
+        <span className="block text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">{sub}</span>
+      </span>
+    </span>
+  );
+}
+
+/** Autosave indicator for the school workspace. */
+export function SaveBadge() {
+  const state = useSaveState();
+  if (state === "idle") return null;
+  const map = {
+    saving: { icon: CloudUpload, label: "Saving", cls: "text-muted-foreground" },
+    saved: { icon: Check, label: "Saved", cls: "text-primary" },
+    error: { icon: WifiOff, label: "Offline, retrying", cls: "text-accent" },
+  } as const;
+  const m = map[state];
+  const Icon = m.icon;
+  return (
+    <span className={cn("flex items-center gap-1.5 text-xs font-medium transition-colors", m.cls)}>
+      <Icon className="h-3.5 w-3.5" /> {m.label}
+    </span>
+  );
+}
+
+export const STATUS_META: Record<
+  AssessmentStatus | "generated" | "edited" | "approved_report" | "none",
+  { label: string; dot: string; pill: string }
+> = {
+  draft: { label: "In progress", dot: "bg-slate-400", pill: "bg-slate-100 text-slate-600" },
+  returned: { label: "Returned", dot: "bg-amber-500", pill: "bg-amber-50 text-amber-700" },
+  submitted: { label: "Submitted", dot: "bg-sky-500", pill: "bg-sky-50 text-sky-700" },
+  in_review: { label: "In review", dot: "bg-violet-500", pill: "bg-violet-50 text-violet-700" },
+  approved: { label: "Approved", dot: "bg-emerald-500", pill: "bg-emerald-50 text-emerald-700" },
+  generated: { label: "AI draft", dot: "bg-violet-500", pill: "bg-violet-50 text-violet-700" },
+  edited: { label: "Edited", dot: "bg-sky-500", pill: "bg-sky-50 text-sky-700" },
+  approved_report: { label: "Published", dot: "bg-emerald-500", pill: "bg-emerald-50 text-emerald-700" },
+  none: { label: "No report", dot: "bg-slate-300", pill: "bg-slate-50 text-slate-500" },
+};
+
+export function StatusPill({ status }: { status: keyof typeof STATUS_META }) {
+  const m = STATUS_META[status] ?? STATUS_META.none;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.72rem] font-semibold", m.pill)}>
+      <span className={cn("h-1.5 w-1.5 rounded-full", m.dot)} />
+      {m.label}
+    </span>
+  );
+}
+
+/** Signed-in application top bar. */
+export function TopBar({ context, children }: { context?: string; children?: React.ReactNode }) {
+  const { user, logout } = useAuth();
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+      <div className="mx-auto flex h-[57px] max-w-6xl items-center gap-4 px-6">
+        <Link to="/" className="transition-opacity hover:opacity-80">
+          <Wordmark sub={context ?? "Peek Vision"} />
+        </Link>
+        <div className="ml-auto flex items-center gap-4">
+          {children}
+          {user && (
+            <>
+              <span className="hidden text-sm text-muted-foreground sm:block">
+                {user.fullName || user.email}
+              </span>
+              <button
+                onClick={() => logout().then(() => (window.location.href = "/"))}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sign out
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
