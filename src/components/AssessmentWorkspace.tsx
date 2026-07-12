@@ -78,13 +78,23 @@ export function AssessmentWorkspace({
                   key={s}
                   onClick={() => go(s)}
                   className={cn(
-                    "flex flex-none items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-medium transition",
-                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary",
+                    "flex flex-none items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-[0.8rem] font-medium transition",
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary",
                   )}
                 >
-                  <span className="tabular-nums opacity-70">{i === 0 ? "0" : i > 5 ? "" : i}</span>
+                  <span
+                    className={cn(
+                      "grid h-5 w-5 flex-none place-items-center rounded-full text-[0.68rem] font-bold tabular-nums",
+                      active
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : done
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-muted-foreground",
+                    )}
+                  >
+                    {done && !active ? <Check className="h-3 w-3" /> : i === 0 ? "C" : i > 5 ? "✓" : i}
+                  </span>
                   {SHORT[s]}
-                  {done && !active && <Check className="h-3 w-3 text-primary" />}
                 </button>
               );
             })}

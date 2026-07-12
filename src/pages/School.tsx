@@ -4,7 +4,7 @@ import { CheckCircle2, Clock, Download, FileText, Send, X } from "lucide-react";
 import { api, type AssessmentPayload } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { hydrate, enableServerSync, disableServerSync, flushNow, completionPct, useStoreVersion, getAll } from "@/lib/store";
-import { TopBar, SaveBadge, StatusPill } from "@/components/brand";
+import { TopBar, SaveBadge, StatusPill, ProgressRing } from "@/components/brand";
 import { AssessmentWorkspace, type Section } from "@/components/AssessmentWorkspace";
 import { ReportView } from "@/components/ReportView";
 
@@ -46,6 +46,34 @@ function SubmitModal({ open, onClose, onConfirm, busy }: {
           </button>
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+function WelcomeHeader({ orgName }: { orgName?: string }) {
+  useStoreVersion();
+  const pct = completionPct();
+  return (
+    <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-border bg-gradient-to-br from-primary/[0.04] to-transparent p-6">
+      <ProgressRing pct={pct} size={84} />
+      <div className="min-w-[240px] flex-1">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">SEHRA · Module 1</p>
+        <h1 className="mt-1 font-serif text-3xl sm:text-4xl">
+          {pct === 0 ? "Welcome" : "Welcome back"}{orgName ? `, ${orgName}` : ""}
+        </h1>
+        <p className="mt-2 max-w-xl text-muted-foreground">
+          {pct === 0
+            ? "Work through each area at your own pace, in any order. Most teams finish within a working week."
+            : pct < 100
+              ? "Pick up where you left off. Your answers are saved as you type."
+              : "Every question has a response. Review the summary and submit when you are ready."}
+        </p>
+        <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Saves automatically</span>
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Complete in any order</span>
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Blank answers are fine, note gaps in the summary</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -152,12 +180,7 @@ export default function School() {
             </div>
           )}
           <div className="mx-auto max-w-3xl px-6 pt-10">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">SEHRA · Module 1</p>
-            <h1 className="mt-2 font-serif text-3xl sm:text-4xl">Scoping assessment</h1>
-            <p className="mt-3 max-w-xl text-muted-foreground">
-              Work through each area at your own pace. Everything saves automatically. Submit when every
-              section has a response.
-            </p>
+            <WelcomeHeader orgName={user?.org?.name} />
           </div>
           <AssessmentWorkspace section={section} setSection={setSection} onSubmit={() => setSubmitOpen(true)} />
           <SubmitModal open={submitOpen} onClose={() => setSubmitOpen(false)} onConfirm={doSubmit} busy={submitBusy} />

@@ -153,7 +153,7 @@ function ReadonlyAnswers({ answers }: { answers: Record<string, string> }) {
           <section key={comp.id}>
             <div className="mb-3 flex items-center gap-3">
               <h4 className="font-serif text-lg">
-                {comp.id === "context" ? "Context" : `Component ${comp.number}`} · {comp.title}
+                {comp.id === "context" ? "Context" : `Component ${comp.number} · ${comp.title}`}
               </h4>
               {scale && (
                 <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[0.7rem] font-bold text-primary">{scale.label}</span>

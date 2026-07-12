@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useSaveState } from "@/lib/store";
-import { CloudUpload, Check, LogOut, WifiOff } from "lucide-react";
+import { CloudUpload, Check, LogOut, WifiOff, UserCog } from "lucide-react";
 import type { AssessmentStatus } from "@/lib/api";
+import { AccountModal } from "@/components/AccountModal";
 
 export function EyeMark({ className }: { className?: string }) {
   return (
@@ -78,19 +80,32 @@ export function StatusPill({ status }: { status: keyof typeof STATUS_META }) {
 /** Signed-in application top bar. */
 export function TopBar({ context, children }: { context?: string; children?: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const [accountOpen, setAccountOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-[57px] max-w-6xl items-center gap-4 px-6">
         <Link to="/" className="transition-opacity hover:opacity-80">
           <Wordmark sub={context ?? "Peek Vision"} />
         </Link>
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-3">
           {children}
           {user && (
             <>
-              <span className="hidden text-sm text-muted-foreground sm:block">
+              <button
+                onClick={() => setAccountOpen(true)}
+                title="Account settings"
+                className="hidden items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground sm:flex"
+              >
+                <UserCog className="h-3.5 w-3.5" />
                 {user.fullName || user.email}
-              </span>
+              </button>
+              <button
+                onClick={() => setAccountOpen(true)}
+                title="Account settings"
+                className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition hover:bg-secondary hover:text-foreground sm:hidden"
+              >
+                <UserCog className="h-4 w-4" />
+              </button>
               <button
                 onClick={() => logout().then(() => (window.location.href = "/"))}
                 className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
@@ -101,6 +116,33 @@ export function TopBar({ context, children }: { context?: string; children?: Rea
           )}
         </div>
       </div>
+      {user && <AccountModal open={accountOpen} onClose={() => setAccountOpen(false)} />}
     </header>
+  );
+}
+
+/** Small circular completion indicator. */
+export function ProgressRing({ pct, size = 76 }: { pct: number; size?: number }) {
+  const stroke = 6;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth={stroke} />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none"
+        stroke="hsl(var(--primary))" strokeWidth={stroke} strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100}
+        className="transition-all duration-500"
+      />
+      <text
+        x="50%" y="50%"
+        className="rotate-90 fill-foreground font-sans text-[0.85rem] font-bold"
+        style={{ transformOrigin: "center" }}
+        textAnchor="middle" dominantBaseline="central"
+      >
+        {pct}%
+      </text>
+    </svg>
   );
 }

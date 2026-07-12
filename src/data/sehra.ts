@@ -36,7 +36,7 @@ export type Question =
   | { type: "note"; text: string }
   | { type: "reflections"; id: string };
 
-export interface SubSection { id: string; title: string; themes?: Theme[]; questions: Question[]; }
+export interface SubSection { id: string; title: string; desc?: string; themes?: Theme[]; questions: Question[]; }
 export interface Component {
   id: string; number: number | string; title: string; purpose: string; subsections: SubSection[];
 }
@@ -98,7 +98,7 @@ export const CONTEXT: Component = {
   purpose: "An overview of the implementation area and the status of any existing school eye health programme. Complete the following for the Implementation Area.",
   subsections: [
     {
-      id: "c.1", title: "Population & demographics", themes: ["Data Limitations"],
+      id: "c.1", title: "Population & demographics", desc: "Basic numbers about your area. National statistics offices, education census data or district profiles are good sources. Approximate figures are fine.", themes: ["Data Limitations"],
       questions: [
         field("ctx_pop", "Total population"),
         table("ctx_children", "Number of children in the following age groups", ["1 – 4 years", "5 – 9 years", "10 – 14 years", "15 – 19 years"], ["Number of children"]),
@@ -110,7 +110,7 @@ export const CONTEXT: Component = {
       ],
     },
     {
-      id: "c.2", title: "Existing school eye health programme", themes: ["Policy & Integration", "Human Resources"],
+      id: "c.2", title: "Existing school eye health programme", desc: "What is already happening in schools today, if anything. If nothing exists, a simple No is a useful answer.", themes: ["Policy & Integration", "Human Resources"],
       questions: [
         yn("ctx_seh_prog", "Are there any standalone school eye health programmes or initiatives within the intervention area (not part of another school-based health programme)?", { help: "Standalone means a programme focused on eyes specifically, not eye checks inside a broader school health programme.", lines: ["Who is the implementer (MoH, MoE, NGO)? Who is the funder?", "Scope: location/area, type of schools, classes/grades screened, age range", "Eye health promotion / conditions included? Teachers' eye health?", "Who screens? Referral mechanism? Where are children referred?", "Who does refraction? Where are glasses obtained? Who pays?"] }),
         yn("ctx_teacher_curr", "Does a curriculum for teacher training exist for school health and/or eye health?", { lines: ["Pre-service or in-service? Scope & content?", "Teaching/learning materials? Performance criteria indicators?"] }),
@@ -120,7 +120,7 @@ export const CONTEXT: Component = {
       ],
     },
     {
-      id: "c.3", title: "Prevalence & service availability", themes: ["Accessibility & Disability", "Data Limitations"],
+      id: "c.3", title: "Prevalence & service availability", desc: "What is known about children's eye problems locally, and which services already exist.", themes: ["Accessibility & Disability", "Data Limitations"],
       questions: [
         field("ctx_prev_area", "Prevalence of refractive errors / specify area"),
         table("ctx_prev", "Prevalence of refractive errors in children of school-going age", ["Myopia", "Hypermetropia", "Astigmatism", "Specialised / complex refraction"], ["Males and females", "Males", "Females"], { help: "Use published studies or programme data if available. Leave blank if unknown and list your sources below." }),
@@ -144,10 +144,10 @@ export const COMPONENTS: Component[] = [
     id: "c1", number: 1, title: "Sectoral Legislation, Policy and Strategy",
     purpose: "To ascertain the degree to which the sectoral policy and strategy environment is conducive for a school eye health programme.",
     subsections: [
-      { id: "1.1", title: "Legislation", themes: ["Policy & Integration"], questions: [
+      { id: "1.1", title: "Legislation", desc: "Whether school health appears anywhere in national law.", themes: ["Policy & Integration"], questions: [
         yn("c1_leg", "Is school health included in national legislation frameworks?", { help: "Legislation means laws passed by parliament. Ministry policies and plans come in the next section.", lines: ["What is the context and how does it relate to sector policies?", "What are the implementation frameworks, if any?", "What key factors limit or impede their implementation?"] }),
       ]},
-      { id: "1.2", title: "Policies, Sector Strategies and Plans", themes: ["Policy & Integration"], questions: [
+      { id: "1.2", title: "Policies, Sector Strategies and Plans", desc: "Work through each national policy and mark whether school health or school eye health is mentioned. Your desk review covers most of this.", themes: ["Policy & Integration"], questions: [
         note("Determine the status of school health / school eye health in these policies, sector strategies and plans:"),
         yn("c1_natedu", "Is school health / school eye health included in the National Education Policy?", { noOption: "No policy exists" }),
         yn("c1_edusector", "Is school health / school eye health included in the Education Sector Plan?", { noOption: "No Sector Plan" }),
@@ -164,7 +164,7 @@ export const COMPONENTS: Component[] = [
         yn("c1_socprot", "Is school health / school eye health included in the Social Protection Policy / Strategy / Plan?", { noOption: "Does not exist" }),
         txt("c1_notes", "Any additional notes (200 words maximum)", { max: 200 }),
       ]},
-      { id: "1.3", title: "Finance", themes: ["Funding & Resources", "Cost & Affordability"], questions: [
+      { id: "1.3", title: "Finance", desc: "Who pays for school health and eye health, and through which mechanisms.", themes: ["Funding & Resources", "Cost & Affordability"], questions: [
         yn("c1_budget_sh", "Is there an allocated budget for school health / school eye health?", { lines: ["Which ministry / ministries?", "What is the annual public expenditure?"] }),
         yn("c1_budget_ap", "Is there an allocated budget for assistive products?", { lines: ["Which ministry / ministries?", "What is the annual public expenditure?"] }),
         yn("c1_budget_eye", "Is there an allocated budget for eye health?", { lines: ["Which ministry / ministries?", "What is the annual public expenditure?"] }),
@@ -172,32 +172,32 @@ export const COMPONENTS: Component[] = [
         txt("c1_edu_fin", "What are the major education financing mechanisms? Name them and describe if/how school health, eye health, disability and special needs is included."),
         yn("c1_insurance", "Are eye health or eyeglasses included in a national health or social protection insurance scheme?", { lines: ["Which scheme?", "Level of coverage and criteria for enrolment"] }),
       ]},
-      { id: "1.4", title: "Key Stakeholders and Coordination", themes: ["Policy & Integration"], questions: [
+      { id: "1.4", title: "Key Stakeholders and Coordination", desc: "Which ministries lead this work, and how health and education coordinate.", themes: ["Policy & Integration"], questions: [
         yn("c1_ministry", "Which ministry/ministries is/are responsible for school health and/or school eye health?", { lines: ["If multiple, is there a primary or lead Ministry?"] }),
         yn("c1_unit", "Is there a designated unit or officer for school health / school eye health within the ministry structure?", { lines: ["If yes, who and which unit?"] }),
         yn("c1_coord", "Is there a mechanism for coordination between the ministries of health and education?", { lines: ["If yes, describe the mechanisms", "If no, what is the broader coordination mechanism?"] }),
       ]},
-      { id: "1.5", title: "Reflections and Implications", questions: [reflections("c1")] },
+      { id: "1.5", title: "Reflections and Implications", desc: "Step back from the detail. Note up to three things that could make a programme difficult here, and three things already working in your favour.", questions: [reflections("c1")] },
     ],
   },
   {
     id: "c2", number: 2, title: "Institutional and Service Delivery Environment",
     purpose: "To describe the situation in the proposed intervention area.",
     subsections: [
-      { id: "2.1", title: "Stakeholders", themes: ["Policy & Integration"], questions: [
+      { id: "2.1", title: "Stakeholders", desc: "Who runs health and education in your area, from policy level down to operations.", themes: ["Policy & Integration"], questions: [
         table("c2_stake", "Main stakeholders / organisational structure in health and education within the intervention area", ["Policy level", "Planning level", "Operational level", "Role"], ["Stakeholders"]),
         table("c2_org_health", "Organisational structure in health in the public sector", ["Central / Federal", "Regional / Provincial", "District", "Sub-district", "Community"], ["Health structure"]),
         table("c2_org_edu", "Organisational structure in education in the public sector", ["Central / Federal", "Regional / Provincial", "District", "Sub-district", "Community"], ["Education structure"]),
         yn("c2_coord", "Is there a coordination mechanism for school health / school eye health within the intervention area?", { lines: ["If yes, please describe the mechanism"] }),
       ]},
-      { id: "2.2", title: "Infrastructure", themes: ["Accessibility & Disability"], questions: [
+      { id: "2.2", title: "Infrastructure", desc: "Counts of schools and health facilities in the intervention area.", themes: ["Accessibility & Disability"], questions: [
         table("c2_inf_edu", "Education Sector Infrastructure / Number of Facilities", ["Pre-Primary", "Primary", "Middle Secondary", "Secondary"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
         table("c2_inf_health", "Health Sector Infrastructure / Number of Facilities", ["Community HC", "Primary HC", "Secondary HC", "Tertiary HC"], ["Public Sector", "NGO", "Private", "Charity", "Faith-based"]),
       ]},
-      { id: "2.3", title: "School-based Health programme", themes: ["Policy & Integration"], questions: [
+      { id: "2.3", title: "School-based Health programme", desc: "Health programmes already running inside schools, such as deworming, nutrition or WASH.", themes: ["Policy & Integration"], questions: [
         yn("c2_shp", "Are there any school-based specific health programmes within the intervention area? (deworming, NTDs, WASH, NCDs, nutrition)", { lines: ["Does the programme include school eye health?", "Implementer & funder?", "Scope: schools, grades, age range, eye conditions?", "Promotion, teachers' eye health, screening, referral?", "Refraction, eyeglasses, who pays?"] }),
       ]},
-      { id: "2.4", title: "Community level", themes: ["Accessibility & Disability", "Human Resources"], questions: [
+      { id: "2.4", title: "Community level", desc: "Eye care available where people live, and any screening happening in the community.", themes: ["Accessibility & Disability", "Human Resources"], questions: [
         yn("c2_pec", "Is primary eye care available in the intervention area?"),
         yn("c2_pec_promo", "Does primary eye care include eye health promotion and prevention for school-age (5–18) and pre-school (1–4) children?"),
         yn("c2_pec_refr", "Is there a cadre at primary level able to provide refraction to school-age children?", { lines: ["Who are they?"] }),
@@ -207,84 +207,84 @@ export const COMPONENTS: Component[] = [
         yn("c2_student_screen", "Are there screening activities for school health by senior / junior students?"),
         yn("c2_comm_coord", "Is there coordination between community health screening for school-age children and education services?"),
       ]},
-      { id: "2.5", title: "Secondary level", themes: ["Accessibility & Disability"], questions: [
+      { id: "2.5", title: "Secondary level", desc: "Eye care at district or referral hospital level.", themes: ["Accessibility & Disability"], questions: [
         yn("c2_sec", "Is secondary eye care available in the intervention area?", { lines: ["Main cadres providing eye health?", "Refraction available? Cadre for school-age children?", "Linked with school health? How many facilities?", "Services for myopia, hypermetropia, astigmatism, aphakia?"] }),
       ]},
-      { id: "2.6", title: "Tertiary level", themes: ["Accessibility & Disability"], questions: [
+      { id: "2.6", title: "Tertiary level", desc: "Specialised eye care, usually at large or teaching hospitals.", themes: ["Accessibility & Disability"], questions: [
         yn("c2_ter", "Is tertiary eye care available in the intervention area?", { lines: ["Main cadres? Refraction available?", "Cadre for school-age refraction / specialised paediatric care?", "Linked with school health? How many facilities?", "Services for myopia, hypermetropia, astigmatism, aphakia?", "If 'No': where are complex cases referred? Links with special education / rehab?"] }),
       ]},
-      { id: "2.7", title: "Referral Pathways", themes: ["Accessibility & Disability"], questions: [
+      { id: "2.7", title: "Referral Pathways", desc: "How a child actually moves from being spotted at school to being treated.", themes: ["Accessibility & Disability"], questions: [
         group("c2_referral", "Does a referral pathway exist from the following? (describe in remarks)", ["School to health system", "Community to primary HC", "Primary to secondary HC", "Secondary to tertiary HC"]),
         yn("c2_enablers", "Are there known factors (enablers) that facilitate referral uptake for children with eye conditions?", { lines: ["If 'Yes', please describe"] }),
       ]},
-      { id: "2.8", title: "Data", themes: ["Data Limitations"], questions: [
+      { id: "2.8", title: "Data", desc: "What the routine data systems in health and education capture about children's eyes.", themes: ["Data Limitations"], questions: [
         yn("c2_emis", "Are there indicators related to the health of children within the EMIS?", { help: "EMIS is the education sector's routine data system, where schools report enrolment and other indicators.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › education authorities?"] }),
         yn("c2_hmis", "Are there indicators related to eye health within the HMIS / DHIS?", { help: "HMIS or DHIS is the health sector's routine data system, often DHIS2.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › health authorities?"] }),
         yn("c2_datashare", "Is there coordination or data sharing between education and health authorities on school children's health?", { thirdOption: "This does not exist" }),
         yn("c2_me", "Does a monitoring, evaluation and/or supportive supervision framework exist in the intervention area?", { thirdOption: "This does not exist" }),
       ]},
-      { id: "2.9", title: "Reflections and Implications", questions: [reflections("c2")] },
+      { id: "2.9", title: "Reflections and Implications", desc: "Step back from the detail. Note up to three things that could make a programme difficult here, and three things already working in your favour.", questions: [reflections("c2")] },
     ],
   },
   {
     id: "c3", number: 3, title: "Human Resources",
     purpose: "To find out if the right people, with the right skills, in the right place, are in enough numbers to operationalise a school eye health programme.",
     subsections: [
-      { id: "3.1", title: "Type of Cadres / Health", themes: ["Human Resources"], questions: [
+      { id: "3.1", title: "Type of Cadres / Health", desc: "The health workers available, from community health workers to ophthalmologists. Rough counts are fine.", themes: ["Human Resources"], questions: [
         yn("c3_h_avail", "Are essential health human resources available to implement school health / school eye health?"),
         yn("c3_h_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
         table("c3_h_count", "Type and number of essential health human resources in the intervention area", SECTORS, ["Community health workers", "Primary eye care workers", "Mid-level eye care personnel", "Nurses / school nurses", "Refractionists / Optometrists", "Optical personnel (dispensing)", "Ophthalmologists", "Paediatric ophthalmologists & squint specialists", "Programme managers"], { help: "Approximate counts are fine. Leave cells blank where a cadre does not exist." }),
         txt("c3_h_capdev", "What additional capacity development needs are likely required?"),
         txt("c3_h_opp", "Opportunities to enhance their knowledge, skills and competencies?"),
       ]},
-      { id: "3.2", title: "Type of Cadres / Education", themes: ["Human Resources"], questions: [
+      { id: "3.2", title: "Type of Cadres / Education", desc: "The teachers and school staff who could support screening and referral.", themes: ["Human Resources"], questions: [
         yn("c3_e_avail", "Are essential education human resources available to implement school health / school eye health?"),
         yn("c3_e_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
         table("c3_e_count", "Type and number of essential education human resources in the intervention area", SECTORS, ["Head teachers", "Class & contact teachers", "Special education teachers"]),
         txt("c3_e_capdev", "What additional capacity development needs are likely required?"),
         txt("c3_e_opp", "Opportunities to enhance their knowledge, skills and competencies?"),
       ]},
-      { id: "3.3", title: "Capacity Needs", themes: ["Human Resources"], questions: [
+      { id: "3.3", title: "Capacity Needs", desc: "Training gaps among the local administrators who would run this work.", themes: ["Human Resources"], questions: [
         yn("c3_cap_health", "Capacity development needs of local health administration personnel?", { lines: ["If 'Yes', what are they?"] }),
         yn("c3_cap_edu", "Capacity development needs of local education administration personnel?", { lines: ["If 'Yes', what are they?"] }),
         yn("c3_supervision", "Does a supportive supervision system exist for school health / school eye health?", { lines: ["Areas to strengthen?"] }),
       ]},
-      { id: "3.4", title: "Reflections and Implications", questions: [reflections("c3")] },
+      { id: "3.4", title: "Reflections and Implications", desc: "Step back from the detail. Note up to three things that could make a programme difficult here, and three things already working in your favour.", questions: [reflections("c3")] },
     ],
   },
   {
     id: "c4", number: 4, title: "Supply Chain",
     purpose: "To describe the availability and flow of glasses, consumables and equipment required in a school eye health programme.",
     subsections: [
-      { id: "4.1", title: "Eyeglasses", themes: ["Supply Chain", "Policy & Integration"], questions: [
+      { id: "4.1", title: "Eyeglasses", desc: "The rules and systems that govern how spectacles reach people in your country.", themes: ["Supply Chain", "Policy & Integration"], questions: [
         yn("c4_policy", "Any policy/regulations that guide import, production, procurement or sale of spectacle frames and lenses?", { lines: ["If 'Yes', what are they?"] }),
         yn("c4_essential", "Are eyeglasses on the MoH Essential Supplies List or Essential List of Assistive Technologies?", { help: "Essential lists are the Ministry of Health's official lists of supplies the public system is expected to stock." }),
         yn("c4_gov_supply", "Are eyeglasses already included in the government supply chain?", { lines: ["Who oversees procurement, distribution, quantification?", "Flow of product from import to end-user?"] }),
         yn("c4_other_supply", "Are there other supply chains for optical products (wholesaler to retail)?", { lines: ["Who oversees procurement, distribution, quantification?", "Flow of product from import to end-user?"] }),
       ]},
-      { id: "4.2", title: "Availability of optical services", themes: ["Supply Chain"], questions: [
+      { id: "4.2", title: "Availability of optical services", desc: "Where glasses can actually be dispensed in your area, by sector.", themes: ["Supply Chain"], questions: [
         table("c4_optical", "Availability of optical services within the intervention area", ["Public", "Private", "NGO / FBO / other", "Notes"], ["Pharmacies & last-mile retailers", "Stand-alone optical / vision centre", "Hospital-based optical / vision centre", "Hospital-based optical lab", "Other optical lab in country"]),
       ]},
-      { id: "4.3", title: "Availability of eyeglasses", themes: ["Supply Chain"], questions: [
+      { id: "4.3", title: "Availability of eyeglasses", desc: "Whether children's frames and lenses can genuinely be bought locally.", themes: ["Supply Chain"], questions: [
         table("c4_glasses", "Availability of eyeglasses within the intervention area", ["Available?", "Local / imported / both", "Local distributor?", "Customs duties & VAT", "Notes"], ["Children's frames", "Spherical lenses", "Cylindrical lenses", "Ready-made distance eyeglasses", "Ready-to-clip lenses and frames"]),
         yn("c4_ethnic_frames", "Are frame sizes adapted to local ethnic facial features available?"),
       ]},
-      { id: "4.4", title: "Costing of eyeglasses (local currency)", themes: ["Cost & Affordability"], questions: [
+      { id: "4.4", title: "Costing of eyeglasses (local currency)", desc: "What glasses cost, set against what families earn.", themes: ["Cost & Affordability"], questions: [
         field("c4_minwage", "What is the minimum wage in local currency?", { help: "A reference point for judging whether spectacle prices are affordable locally." }),
         table("c4_costing", "Average retail cost / Simple (≤±2D), High-power (>±5D), Complex (astigmatism)", ["Simple / Public", "Simple / Private", "High / Public", "High / Private", "Complex / Public", "Complex / Private", "Remarks"], ["Custom prescription glasses", "Ready-made distance glasses", "Ready-made reading glasses", "Ready-to-clip lenses and frames"], { help: "Use local currency and rough averages. Simple means up to plus or minus 2D, high-power over 5D, complex means any astigmatism." }),
       ]},
-      { id: "4.5", title: "Capacity to pay", themes: ["Cost & Affordability", "Funding & Resources"], questions: [
+      { id: "4.5", title: "Capacity to pay", desc: "Whether families, insurance or government schemes can cover the costs.", themes: ["Cost & Affordability", "Funding & Resources"], questions: [
         yn("c4_wtp", "Information on willingness or capacity to pay for eyeglasses?", { help: "Any study, survey or programme record showing what families can or will pay for spectacles.", lines: ["What is the capacity to pay?"] }),
         yn("c4_ins_screen", "Does insurance / government mechanism cover vision screening / refraction?", { lines: ["Coverage for adults?", "Coverage for school-age children?"] }),
         yn("c4_ins_glasses", "Does insurance / government mechanism cover the cost of eyeglasses?", { lines: ["Coverage for adults?", "Coverage for school-age children?"] }),
       ]},
-      { id: "4.6", title: "Consumables", themes: ["Supply Chain"], questions: [
+      { id: "4.6", title: "Consumables", desc: "Basic eye medicines in the public system.", themes: ["Supply Chain"], questions: [
         yn("c4_cons_list", "Are anti-biotic eyedrops / ointment on the MoH Essential Medicines List?"),
         yn("c4_cons_primary", "Available in the public sector at primary health care level?"),
         yn("c4_cons_secondary", "Available in the public sector at secondary health care level?"),
         yn("c4_cons_tertiary", "Available in the public sector at tertiary health care level?"),
       ]},
-      { id: "4.7", title: "Equipment", themes: ["Supply Chain"], questions: [
+      { id: "4.7", title: "Equipment", desc: "Whether the right diagnostic equipment exists at each level of care.", themes: ["Supply Chain"], questions: [
         note("Is there a standard list of ophthalmic equipment used by the MoH to detect / diagnose and treat school-age children?"),
         yn("c4_eq_school", "To detect / diagnose and treat school-age children at school level?"),
         yn("c4_eq_community", "To detect eye conditions at community health care level?"),
@@ -292,32 +292,32 @@ export const COMPONENTS: Component[] = [
         yn("c4_eq_secondary", "To diagnose and manage eye conditions at secondary level?"),
         yn("c4_eq_tertiary", "To diagnose and manage eye conditions at tertiary level?"),
       ]},
-      { id: "4.8", title: "Reflections and Implications", questions: [reflections("c4")] },
+      { id: "4.8", title: "Reflections and Implications", desc: "Step back from the detail. Note up to three things that could make a programme difficult here, and three things already working in your favour.", questions: [reflections("c4")] },
     ],
   },
   {
     id: "c5", number: 5, title: "Barriers",
     purpose: "A cross-cutting component: to explore barriers that would hinder delivery of child eye health services through a school eye health programme.",
     subsections: [
-      { id: "5.1", title: "Cultural perceptions", themes: ["Social & Cultural Factors"], questions: [
+      { id: "5.1", title: "Cultural perceptions", desc: "Whether some children's health is treated as a lower priority in practice.", themes: ["Social & Cultural Factors"], questions: [
         yn("c5_child", "Evidence that the health of children is not prioritised in the intervention area?"),
         yn("c5_girls", "Evidence that the health needs of girls are not prioritised?"),
         yn("c5_ethnic", "Evidence that the health needs of specific ethnic groups are not prioritised?"),
       ]},
-      { id: "5.2", title: "Barriers to wearing eyeglasses / parents & children", themes: ["Social & Cultural Factors", "Health Literacy", "Cost & Affordability", "Accessibility & Disability"], questions: [
+      { id: "5.2", title: "Barriers to wearing eyeglasses / parents & children", desc: "Why children who need glasses might not get them or wear them. Tick everything that applies; skip what you have no information on.", themes: ["Social & Cultural Factors", "Health Literacy", "Cost & Affordability", "Accessibility & Disability"], questions: [
         yn("c5_info", "Is information available on barriers that limit spectacle wear among children, applicable to the intervention area?"),
         group("c5_perception", "Barriers / perception & awareness", ["Fears about wearing eyeglasses", "Unacceptable colour, style or quality", "Low literacy levels of parents", "Lack of information about screening and use of eyeglasses", "No felt need by parents", "Misinformation and misconceptions about eyeglasses", "Cultural beliefs and practices about eye health and use of eyeglasses", "Traditional / religious beliefs prevent or delay treatment of children who need eyeglasses", "Child's vision affected by witchcraft", "Bullying and teasing", "Other stigma", "Lack of clear messaging on the benefits of eyeglasses", "Lack of clear communication on the processes involved in a school eye health programme"]),
         group("c5_costs", "Barriers / costs", ["Fear of loss of earnings / daily wages by parents to access eyeglasses", "Limited availability of financial resources in family to procure eyeglasses", "Travel cost to point of referral", "Cost of eyeglasses", "Cost of eye care treatment"]),
         group("c5_access", "Barriers / access & accessibility", ["Long distance to point of referral to obtain eyeglasses", "Long distance to point of referral for eye care treatment", "Delay in dispensing of eyeglasses", "Lack of person to accompany child to referral centre for eyeglasses or eye care treatment", "Waiting time between screening and eye care treatment or provision of eyeglasses", "Seasonal variation that limits access to eye health services", "Lack of trust by parents in personnel conducting screening", "Lack of trust by parents in eye care service provider at referral centre", "Children with disabilities cannot access screening", "Children with disabilities cannot access referral centre", "Other"]),
       ]},
-      { id: "5.3", title: "Barriers to the delivery of programmes", themes: ["Human Resources", "Supply Chain", "Funding & Resources", "Accessibility & Disability"], questions: [
+      { id: "5.3", title: "Barriers to the delivery of programmes", desc: "Obstacles inside the system itself: staffing, supplies, financing and service delivery.", themes: ["Human Resources", "Supply Chain", "Funding & Resources", "Accessibility & Disability"], questions: [
         yn("c5_system", "Barriers within the health or education system preventing uptake by school-age children?"),
         group("c5_hr", "Barriers / Human Resources", ["Screeners (e.g. teachers or nurses) inadequately trained", "Teachers do not have time to screen", "Lack of eye care professionals to receive and attend to referrals", "Poor attitude / behaviours of education personnel at the point of screening", "Poor attitude and behaviours of eye health personnel at referral centres"]),
         group("c5_supply", "Barriers / Supply Chain", ["No eyeglasses suitable for children available within the intervention area"]),
         group("c5_finance", "Barriers / Financing", ["Inadequate state investment in school health services", "Eyeglasses not included in health insurance or other state financing mechanism"]),
         group("c5_service", "Barriers / Service Delivery", ["Poor integration of school eye health in other health screening programmes", "Lack of support services for children with vision impairment", "Inadequate referral pathway between schools and eye health services", "Delays in providing eyeglasses", "Other"]),
       ]},
-      { id: "5.4", title: "Reflections and Implications", questions: [reflections("c5")] },
+      { id: "5.4", title: "Reflections and Implications", desc: "Step back from the detail. Note up to three things that could make a programme difficult here, and three things already working in your favour.", questions: [reflections("c5")] },
     ],
   },
 ];

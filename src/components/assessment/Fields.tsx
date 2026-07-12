@@ -69,7 +69,7 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
   if (q.noOption) opts.push([q.noOption, "na"]);
   return (
     <QuestionShell>
-      <div className="text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <div className="text-base leading-relaxed text-foreground">{q.text}</div>
       <Help text={q.help} />
       <div className="mt-3 flex flex-wrap gap-2">
         {opts.map(([lab, kind]) => {
@@ -79,7 +79,7 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
               key={lab}
               onClick={() => setField(q.id + "__yn", active ? "" : lab)}
               className={cn(
-                "rounded-md border px-4 py-1.5 text-[0.82rem] font-medium transition-all duration-150",
+                "rounded-lg border px-5 py-2 text-sm font-medium transition-all duration-150",
                 active && kind === "yes" && "border-primary bg-primary text-primary-foreground shadow-sm",
                 active && kind === "no" && "border-foreground bg-foreground text-background shadow-sm",
                 active && kind === "na" && "border-muted-foreground bg-muted text-foreground",
@@ -103,9 +103,9 @@ function YN({ q }: { q: Extract<Question, { type: "yn" }> }) {
 function TextQ({ q }: { q: Extract<Question, { type: "text" }> }) {
   return (
     <QuestionShell>
-      <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <div className="mb-1 text-base leading-relaxed text-foreground">{q.text}</div>
       <Help text={q.help} />
-      <Note id={q.id} placeholder="Type your answer" lg />
+      <Note id={q.id} placeholder="Type your answer. It is fine to leave this blank if you do not know." lg />
     </QuestionShell>
   );
 }
@@ -261,11 +261,11 @@ function ReflectionsQ({ q }: { q: Extract<Question, { type: "reflections" }> }) 
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <h4 className="mb-2.5 text-[0.9rem] font-semibold text-foreground">What might make this difficult</h4>
-          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__challenge_${i}`} placeholder={`Point ${i + 1}`} />)}
+          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__challenge_${i}`} placeholder={`Challenge ${i + 1}`} />)}
         </div>
         <div>
           <h4 className="mb-2.5 text-[0.9rem] font-semibold text-foreground">What is already working in your favour</h4>
-          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__support_${i}`} placeholder={`Point ${i + 1}`} />)}
+          {[0, 1, 2].map((i) => <ReflectionCell key={i} id={`${q.id}__support_${i}`} placeholder={`Strength ${i + 1}`} />)}
         </div>
       </div>
     </QuestionShell>
@@ -296,16 +296,23 @@ export function SubSectionView({ sub, compId, defaultOpen }: { sub: SubSection; 
       st.state === "complete" ? "border-primary/40" : "border-border",
       open && "shadow-[0_10px_30px_-18px_rgba(15,118,107,0.25)]"
     )}>
-      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-secondary/30">
-        <span className={cn("grid h-5 w-5 flex-none place-items-center rounded-full border transition",
+      <button onClick={() => setOpen(!open)} className="flex w-full items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-secondary/30">
+        <span className={cn("mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full border transition",
           st.state === "complete" && "border-primary bg-primary text-primary-foreground",
           st.state === "partial" && "border-primary/50",
           st.state === "" && "border-input")}>
           {st.state === "complete" && <Check className="h-3 w-3" />}
           {st.state === "partial" && <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />}
         </span>
-        <span className="font-medium text-foreground">{sub.title}</span>
-        <span className="ml-auto flex items-center gap-3">
+        <span className="min-w-0 flex-1">
+          <span className="block font-medium text-foreground">{sub.title}</span>
+          {sub.desc && (
+            <span className={cn("mt-0.5 block text-[0.8rem] leading-snug text-muted-foreground", !open && "line-clamp-1")}>
+              {sub.desc}
+            </span>
+          )}
+        </span>
+        <span className="ml-2 flex flex-none items-center gap-3 pt-0.5">
           {st.total > 0 && <span className="text-[0.72rem] tabular-nums text-muted-foreground">{st.done}/{st.total}</span>}
           <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", open && "rotate-180")} />
         </span>
