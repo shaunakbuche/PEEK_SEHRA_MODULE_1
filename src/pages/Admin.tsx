@@ -772,7 +772,10 @@ export default function Admin() {
               <button onClick={load} className="flex items-center gap-1.5 rounded-lg border border-border px-3.5 py-2.5 text-sm font-semibold transition hover:border-primary hover:text-primary">
                 <RefreshCw className="h-4 w-4" /> Refresh
               </button>
-              <button onClick={() => setCreateOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600">
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-10px_hsl(178_66%_26%/0.5)] transition hover:-translate-y-0.5 hover:bg-primary-600"
+              >
                 <Plus className="h-4 w-4" /> New organization
               </button>
             </div>

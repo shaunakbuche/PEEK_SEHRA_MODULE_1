@@ -1,12 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, FileCheck2, Send, Sparkles } from "lucide-react";
+import { ArrowUpRight, ClipboardList, FileCheck2, Send, Sparkles, Users } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { Wordmark } from "@/components/brand";
+import { CountUp } from "@/components/CountUp";
+import { Marquee } from "@/components/Marquee";
 import { useAuth } from "@/lib/auth";
 import { ASSESS, THEMES } from "@/data/sehra";
 
 const COUNTRIES = ["Ethiopia", "India", "Lao PDR", "Liberia", "Nigeria", "Pakistan", "Uganda"];
+
+const STATS = [
+  { value: ASSESS.length - 1, suffix: "", label: "Components assessed" },
+  { value: THEMES.length, suffix: "", label: "Analysis themes" },
+  { value: COUNTRIES.length, suffix: "+", label: "Countries already scoped" },
+];
 
 function fadeIn(delay = 0) {
   return {
@@ -58,28 +66,43 @@ export default function Landing() {
 
       <Hero onBegin={begin} onExplore={() => scrollTo("module")} />
 
-      {/* countries strip */}
+      {/* countries marquee */}
       <section className="border-t border-border bg-secondary/30">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-center text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Grounded in SEHRA scoping work across
           </p>
-          <div className="mt-3.5 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-            {COUNTRIES.map((c) => (
-              <span key={c} className="font-serif text-lg text-foreground/60">{c}</span>
-            ))}
+          <div className="mt-3.5">
+            <Marquee items={COUNTRIES} duration={26} />
           </div>
         </div>
       </section>
 
-      {/* why it matters */}
-      <section className="relative">
-        <motion.div {...fadeIn()} className="mx-auto max-w-3xl px-6 py-20 text-center">
+      {/* why it matters + stats */}
+      <section className="relative border-t border-border">
+        <motion.div {...fadeIn()} className="mx-auto max-w-3xl px-6 pt-20 text-center">
           <p className="font-serif text-2xl leading-snug text-foreground sm:text-[1.7rem]">
             Most children who cannot see clearly at school are never picked up. Before anyone commits to
             a full survey, it helps to know the basics are in place. This assessment gives you that
             answer in about a working week.
           </p>
+        </motion.div>
+
+        <motion.div {...fadeIn(0.1)} className="mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border px-6 pb-20 sm:px-0 md:grid-cols-4">
+          {STATS.map((s, i) => (
+            <div key={i} className="bg-background px-5 py-8 text-center">
+              <div className="font-serif text-4xl text-primary sm:text-5xl">
+                <CountUp value={s.value} suffix={s.suffix} />
+              </div>
+              <p className="mx-auto mt-2 max-w-[14ch] text-[0.8rem] leading-snug text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+          <div className="flex flex-col items-center justify-center gap-2 bg-background px-5 py-8 text-center">
+            <Users className="h-6 w-6 text-primary" strokeWidth={1.6} aria-hidden />
+            <p className="mx-auto max-w-[16ch] text-[0.8rem] leading-snug text-muted-foreground">
+              One login, shared across any number of devices and people
+            </p>
+          </div>
         </motion.div>
       </section>
 
@@ -96,21 +119,35 @@ export default function Landing() {
           </motion.div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {ASSESS.map((comp, i) => (
-              <motion.div
-                key={comp.id}
-                {...fadeIn(i * 0.05)}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_14px_40px_-16px_rgba(15,118,107,0.25)]"
-              >
-                <div className="flex items-baseline gap-3">
-                  <span className="font-serif text-3xl text-primary/30 transition-colors group-hover:text-primary/60">
-                    {comp.id === "context" ? "C" : comp.number}
-                  </span>
-                  <h3 className="font-serif text-xl leading-snug">{comp.title}</h3>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{comp.purpose}</p>
-              </motion.div>
-            ))}
+            {ASSESS.map((comp, i) => {
+              const isContext = comp.id === "context";
+              return (
+                <motion.div
+                  key={comp.id}
+                  {...fadeIn(i * 0.05)}
+                  className={`group relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1 ${
+                    isContext
+                      ? "border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent hover:border-primary/40 hover:shadow-[0_18px_44px_-18px_hsl(178_66%_26%/0.35)]"
+                      : "border-border bg-card hover:border-primary/40 hover:shadow-[0_14px_40px_-16px_rgba(15,118,107,0.25)]"
+                  }`}
+                >
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
+                  />
+                  <div className="relative flex items-start justify-between gap-3">
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-serif text-3xl text-primary/30 transition-colors group-hover:text-primary/60">
+                        {isContext ? "C" : comp.number}
+                      </span>
+                      <h3 className="font-serif text-xl leading-snug">{comp.title}</h3>
+                    </div>
+                    <ArrowUpRight className="mt-1 h-4 w-4 flex-none text-primary/0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary/60" />
+                  </div>
+                  <p className="relative mt-3 text-sm leading-relaxed text-muted-foreground">{comp.purpose}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
           <motion.div {...fadeIn(0.1)} className="mt-10 rounded-2xl border border-border bg-secondary/30 p-6">
@@ -138,15 +175,21 @@ export default function Landing() {
 
           <div className="grid gap-4 md:grid-cols-4">
             {[
-              { icon: ClipboardList, title: "Work through the sections", text: "Sign in with the login Peek shares with you. Every answer saves as you type, so the team can fill it in over days." },
+              { icon: ClipboardList, title: "Work through the sections", text: "Sign in with the login Peek shares with you. Every answer saves as you type, so the team can fill it in over days, from any computer." },
               { icon: Send, title: "Submit to Peek", text: "One click sends the complete assessment to the Peek SEHRA team for review." },
               { icon: Sparkles, title: "Peek prepares your report", text: "A structured report is drafted from your answers, then reviewed, refined and approved by the Peek team." },
               { icon: FileCheck2, title: "Download and plan", text: "The approved report appears in your workspace as a polished PDF and Word document, ready to share." },
             ].map((s, i) => (
-              <motion.div key={i} {...fadeIn(i * 0.07)} className="relative rounded-2xl border border-border bg-card p-6">
-                <span className="absolute right-5 top-4 font-serif text-4xl text-primary/10">{i + 1}</span>
-                <s.icon className="h-6 w-6 text-primary" strokeWidth={1.6} />
-                <h3 className="mt-4 font-semibold">{s.title}</h3>
+              <motion.div
+                key={i}
+                {...fadeIn(i * 0.07)}
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card/80 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-600 text-sm font-bold text-primary-foreground shadow-[0_6px_16px_-4px_hsl(178_66%_26%/0.5)]">
+                  {i + 1}
+                </div>
+                <s.icon className="mt-4 h-5 w-5 text-primary" strokeWidth={1.6} aria-hidden />
+                <h3 className="mt-3 font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
               </motion.div>
             ))}
@@ -164,13 +207,13 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={begin}
-              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600"
+              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_12px_28px_-10px_hsl(178_66%_26%/0.55)] transition hover:-translate-y-0.5 hover:bg-primary-600"
             >
               {user ? "Open your workspace" : "Sign in to begin"}
             </button>
             <a
               href="mailto:sehra@peekvision.org"
-              className="rounded-md border border-border px-6 py-3 text-sm font-semibold transition hover:border-primary hover:text-primary"
+              className="rounded-md border border-border px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-primary hover:text-primary"
             >
               Request access
             </a>
