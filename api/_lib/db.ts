@@ -6,16 +6,32 @@ import { Pool } from "pg";
  * speaks plain wire-protocol Postgres over TCP+SSL rather than a proprietary
  * HTTP/WebSocket gateway.
  */
+/**
+ * Strip sslmode from the URL so pg-connection-string doesn't apply its own
+ * mode-based TLS logic (recent versions treat "require"/"prefer" as aliases
+ * for "verify-full", which rejects Supabase's certificate chain). SSL is
+ * controlled explicitly via the `ssl` option below instead.
+ */
+function stripSslMode(raw: string): string {
+  try {
+    const url = new URL(raw);
+    url.searchParams.delete("sslmode");
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
 let pool: Pool | null = null;
 function getPool(): Pool {
   if (!pool) {
-    const connectionString = process.env.POSTGRES_URL;
-    if (!connectionString) {
+    const raw = process.env.POSTGRES_URL;
+    if (!raw) {
       throw new Error("POSTGRES_URL is not set. Create a Postgres store in the Vercel dashboard and redeploy.");
     }
     pool = new Pool({
-      connectionString,
-      ssl: connectionString.includes("sslmode=disable") ? false : { rejectUnauthorized: false },
+      connectionString: stripSslMode(raw),
+      ssl: { rejectUnauthorized: false },
       max: 3,
     });
   }
