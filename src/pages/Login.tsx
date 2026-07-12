@@ -78,7 +78,7 @@ export default function Login() {
             </label>
 
             {error && (
-              <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive">
+              <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive">
                 {error}
               </p>
             )}

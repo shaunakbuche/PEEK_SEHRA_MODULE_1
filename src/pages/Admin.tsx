@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import {
-  ArrowLeft, CheckCircle2, Download, Eye, Loader2, Plus, RefreshCw,
-  Search, Sparkles, Undo2, X,
+  Archive, ArrowLeft, CheckCircle2, Download, Eye, Loader2, Plus, RefreshCw,
+  Search, Sparkles, Trash2, Undo2, X,
 } from "lucide-react";
 import { api, type AssessmentPayload, type AssessmentStatus, type OrgRow } from "@/lib/api";
 import type { ReportContent } from "@/lib/reportTypes";
@@ -10,6 +9,7 @@ import { INDICATOR_LEVELS } from "@/lib/reportTypes";
 import { ASSESS, SCALE_KEY, type Question } from "@/data/sehra";
 import { TopBar, StatusPill, STATUS_META } from "@/components/brand";
 import { ReportView } from "@/components/ReportView";
+import { Dialog } from "@/components/Dialog";
 import { useToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -48,8 +48,6 @@ function CreateOrgModal({ open, onClose, onCreated }: {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  if (!open) return null;
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -68,15 +66,11 @@ function CreateOrgModal({ open, onClose, onCreated }: {
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={onClose}>
-      <motion.form
-        initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        onSubmit={submit} onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-2xl border border-border bg-card p-7 shadow-xl"
-      >
+    <Dialog open={open} onClose={onClose} labelledBy="create-org-title" maxWidth="max-w-lg">
+      <form onSubmit={submit}>
         <div className="flex items-start justify-between">
-          <h3 className="font-serif text-2xl">New organization</h3>
-          <button type="button" onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
+          <h3 id="create-org-title" className="font-serif text-2xl">New organization</h3>
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">Creates the organization and the login you will share with them.</p>
         <div className="mt-5 grid gap-3.5 sm:grid-cols-2">
@@ -87,15 +81,17 @@ function CreateOrgModal({ open, onClose, onCreated }: {
           <OrgField label="Login email" type="email" value={form.email} onChange={set("email")} />
           <OrgField label="Temporary password" value={form.password} onChange={set("password")} hint="At least 8 characters. Share it with the school." />
         </div>
-        {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
+        <div role="status" aria-live="polite">
+          {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
+        </div>
         <div className="mt-6 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary">Cancel</button>
           <button type="submit" disabled={busy} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60">
             {busy ? "Creating…" : "Create login"}
           </button>
         </div>
-      </motion.form>
-    </div>
+      </form>
+    </Dialog>
   );
 }
 
@@ -190,40 +186,33 @@ function ReturnModal({ open, onClose, onConfirm, busy }: {
   open: boolean; onClose: () => void; onConfirm: (note: string) => void; busy: boolean;
 }) {
   const [note, setNote] = useState("");
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-xl"
-      >
-        <div className="flex items-start justify-between">
-          <h3 className="font-serif text-2xl">Return to school</h3>
-          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The assessment unlocks for editing again. Let them know what needs another look.
-        </p>
-        <label className="mt-4 block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Note (optional)</span>
-          <textarea
-            value={note} onChange={(e) => setNote(e.target.value)} rows={4} autoFocus
-            placeholder="For example: a few tables in Component 4 look incomplete."
-            className="w-full resize-y rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-          />
-        </label>
-        <div className="mt-6 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">Cancel</button>
-          <button
-            onClick={() => onConfirm(note)} disabled={busy}
-            className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
-          >
-            <Undo2 className="h-4 w-4" /> {busy ? "Sending back…" : "Return to school"}
-          </button>
-        </div>
-      </motion.div>
-    </div>
+    <Dialog open={open} onClose={onClose} labelledBy="return-modal-title">
+      <div className="flex items-start justify-between">
+        <h3 id="return-modal-title" className="font-serif text-2xl">Return to school</h3>
+        <button onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        The assessment unlocks for editing again. Let them know what needs another look.
+      </p>
+      <label className="mt-4 block">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Note (optional)</span>
+        <textarea
+          value={note} onChange={(e) => setNote(e.target.value)} rows={4}
+          placeholder="For example: a few tables in Component 4 look incomplete."
+          className="w-full resize-y rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        />
+      </label>
+      <div className="mt-6 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">Cancel</button>
+        <button
+          onClick={() => onConfirm(note)} disabled={busy}
+          className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+        >
+          <Undo2 className="h-4 w-4" /> {busy ? "Sending back…" : "Return to school"}
+        </button>
+      </div>
+    </Dialog>
   );
 }
 
@@ -245,8 +234,9 @@ function ListEditor({ items, onChange, placeholder }: {
             className="w-full rounded-md border border-input bg-card px-2.5 py-1.5 text-sm outline-none transition focus:border-primary"
           />
           <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))}
+            aria-label={`Remove point ${i + 1}`}
             className="rounded-md px-2 text-muted-foreground hover:bg-secondary hover:text-destructive">
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden />
           </button>
         </div>
       ))}
@@ -272,6 +262,33 @@ function Area({ label, value, onChange, rows = 4 }: {
   );
 }
 
+function PublishConfirmModal({ open, onClose, onConfirm, busy }: {
+  open: boolean; onClose: () => void; onConfirm: () => void; busy: boolean;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} labelledBy="publish-modal-title">
+      <div className="flex items-start justify-between">
+        <h3 id="publish-modal-title" className="font-serif text-2xl">Publish this report?</h3>
+        <button onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        This locks the report and releases it to the school immediately, with a downloadable PDF and Word
+        document. Make sure you have reviewed the content in Preview first.
+      </p>
+      <div className="mt-6 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">Keep editing</button>
+        <button
+          onClick={onConfirm} disabled={busy}
+          className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+          {busy ? "Publishing…" : "Publish to the school"}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
 function ReportEditor({ reportId, initial, onPublished }: {
   reportId: string; initial: ReportContent; onPublished: (r: { pdfUrl: string | null; docxUrl: string | null }) => void;
 }) {
@@ -280,6 +297,7 @@ function ReportEditor({ reportId, initial, onPublished }: {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<"" | "save" | "approve">("");
   const [preview, setPreview] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const up = (patch: Partial<ReportContent>) => {
     setContent((c) => ({ ...c, ...patch }));
@@ -303,6 +321,7 @@ function ReportEditor({ reportId, initial, onPublished }: {
         `/api/admin/reports/${reportId}/approve`
       );
       setDirty(false);
+      setConfirmOpen(false);
       onPublished(report);
       toast.push("success", "Report published. The school can now see and download it.");
     } catch (e: any) { toast.push("error", e.message); } finally { setBusy(""); }
@@ -320,13 +339,14 @@ function ReportEditor({ reportId, initial, onPublished }: {
             className="rounded-lg border border-border px-3.5 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50">
             {busy === "save" ? "Saving…" : "Save edits"}
           </button>
-          <button onClick={approve} disabled={!!busy}
+          <button onClick={() => setConfirmOpen(true)} disabled={!!busy}
             className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60">
             {busy === "approve" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
             Approve & publish
           </button>
         </div>
       </div>
+      <PublishConfirmModal open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={approve} busy={busy === "approve"} />
 
       {preview ? (
         <div className="rounded-2xl border border-border bg-card p-8">
@@ -413,6 +433,44 @@ function ReportEditor({ reportId, initial, onPublished }: {
 /* Org detail                                                           */
 /* ------------------------------------------------------------------ */
 
+function DeleteOrgModal({ org, open, onClose, onConfirm, busy }: {
+  org: OrgRow; open: boolean; onClose: () => void; onConfirm: () => void; busy: boolean;
+}) {
+  const [typed, setTyped] = useState("");
+  const match = typed.trim() === org.name;
+  return (
+    <Dialog open={open} onClose={onClose} labelledBy="delete-org-title">
+      <div className="flex items-start justify-between">
+        <h3 id="delete-org-title" className="font-serif text-2xl text-destructive">Delete organization</h3>
+        <button onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        This permanently removes <strong className="text-foreground">{org.name}</strong>, its school login, its
+        assessment answers, and any report. This cannot be undone. If you only need to hide it, use{" "}
+        <strong className="text-foreground">Archive</strong> instead.
+      </p>
+      <label className="mt-4 block">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          Type the organization name to confirm
+        </span>
+        <input
+          value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={org.name}
+          className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-destructive focus:ring-2 focus:ring-destructive/15"
+        />
+      </label>
+      <div className="mt-6 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">Cancel</button>
+        <button
+          onClick={onConfirm} disabled={!match || busy}
+          className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition hover:bg-destructive/90 disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" /> {busy ? "Deleting…" : "Delete permanently"}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
 function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void; onChanged: () => void }) {
   const toast = useToast();
   const [payload, setPayload] = useState<AssessmentPayload | null>(null);
@@ -420,6 +478,10 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
   const [genBusy, setGenBusy] = useState(false);
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
+  const [archiveBusy, setArchiveBusy] = useState(false);
+  const [archived, setArchived] = useState(org.archived);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -459,6 +521,34 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
     } catch (e: any) { setError(e.message); toast.push("error", e.message); } finally { setReturnBusy(false); }
   };
 
+  const toggleArchive = async () => {
+    setArchiveBusy(true);
+    try {
+      await api.patch(`/api/admin/organizations/${org.id}`, { action: archived ? "unarchive" : "archive" });
+      setArchived(!archived);
+      onChanged();
+      toast.push("success", archived ? `${org.name} restored.` : `${org.name} archived.`);
+    } catch (e: any) {
+      toast.push("error", e.message);
+    } finally {
+      setArchiveBusy(false);
+    }
+  };
+
+  const deleteOrg = async () => {
+    setDeleteBusy(true);
+    try {
+      await api.del(`/api/admin/organizations/${org.id}`);
+      onChanged();
+      toast.push("success", `${org.name} deleted.`);
+      onBack();
+    } catch (e: any) {
+      toast.push("error", e.message);
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
   const a = payload?.assessment;
   const answered = useMemo(
     () => (a ? Object.values(a.answers).filter((v) => v && v.trim()).length : 0),
@@ -473,19 +563,34 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl">{org.name}</h1>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="font-serif text-3xl">{org.name}</h1>
+            {archived && (
+              <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-[0.7rem] font-semibold text-muted-foreground">
+                <Archive className="h-3 w-3" /> Archived
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {[org.country, org.region].filter(Boolean).join(" · ")}
             {org.schoolEmail && <> · {org.schoolEmail}</>}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {a && <StatusPill status={a.status} />}
           <span className="text-xs text-muted-foreground">{answered} answers</span>
+          <button onClick={toggleArchive} disabled={archiveBusy}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50">
+            <Archive className="h-3.5 w-3.5" /> {archived ? "Restore" : "Archive"}
+          </button>
+          <button onClick={() => setDeleteOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-destructive hover:text-destructive">
+            <Trash2 className="h-3.5 w-3.5" /> Delete
+          </button>
         </div>
       </div>
 
-      {error && <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
+      {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
       {!payload && !error && <div className="grid min-h-[30vh] place-items-center"><span className="loader" /></div>}
 
       {payload && a && (
@@ -562,6 +667,7 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
         </>
       )}
       <ReturnModal open={returnOpen} onClose={() => setReturnOpen(false)} onConfirm={returnToSchool} busy={returnBusy} />
+      <DeleteOrgModal org={org} open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={deleteOrg} busy={deleteBusy} />
     </div>
   );
 }
@@ -616,6 +722,7 @@ export default function Admin() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<AssessmentStatus | "all">("all");
   const [sort, setSort] = useState<SortKey>("updated");
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = useCallback(async () => {
     setError("");
@@ -629,10 +736,13 @@ export default function Admin() {
 
   useEffect(() => { load(); }, [load]);
 
+  const archivedCount = useMemo(() => orgs?.filter((o) => o.archived).length ?? 0, [orgs]);
+
   const visible = useMemo(() => {
     if (!orgs) return [];
     const q = query.trim().toLowerCase();
-    let rows = orgs.filter((o) => filter === "all" || o.assessmentStatus === filter);
+    let rows = orgs.filter((o) => showArchived ? o.archived : !o.archived);
+    rows = rows.filter((o) => filter === "all" || o.assessmentStatus === filter);
     if (q) {
       rows = rows.filter((o) =>
         [o.name, o.country, o.region, o.schoolEmail].filter(Boolean).some((v) => v!.toLowerCase().includes(q))
@@ -643,7 +753,7 @@ export default function Admin() {
     const statusOrder: AssessmentStatus[] = ["submitted", "in_review", "returned", "draft", "approved"];
     const byStatus = (a: OrgRow, b: OrgRow) => statusOrder.indexOf(a.assessmentStatus) - statusOrder.indexOf(b.assessmentStatus);
     return [...rows].sort(sort === "name" ? byName : sort === "status" ? byStatus : byUpdated);
-  }, [orgs, query, filter, sort]);
+  }, [orgs, query, filter, sort, showArchived]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -668,7 +778,7 @@ export default function Admin() {
             </div>
           </div>
 
-          {error && <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
+          {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
           {!orgs && !error && <div className="grid min-h-[30vh] place-items-center"><span className="loader" /></div>}
 
           {orgs && orgs.length > 0 && (
@@ -677,10 +787,11 @@ export default function Admin() {
 
               <div className="mb-5 flex flex-wrap gap-2.5">
                 <div className="relative min-w-[220px] flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={query} onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search by name, country or email"
+                    aria-label="Search organizations"
                     className="w-full rounded-lg border border-input bg-card py-2 pl-9 pr-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                   />
                 </div>
@@ -692,6 +803,17 @@ export default function Admin() {
                   <option value="status">Needs attention first</option>
                   <option value="name">Name (A to Z)</option>
                 </select>
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-semibold transition",
+                    showArchived ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-foreground"
+                  )}
+                >
+                  <Archive className="h-4 w-4" />
+                  {showArchived ? "Showing archived" : "Show archived"}
+                  {archivedCount > 0 && <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[0.68rem] tabular-nums">{archivedCount}</span>}
+                </button>
               </div>
             </>
           )}
@@ -704,7 +826,9 @@ export default function Admin() {
 
           {orgs && orgs.length > 0 && visible.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-              <p className="text-muted-foreground">No organizations match your search or filter.</p>
+              <p className="text-muted-foreground">
+                {showArchived ? "No archived organizations." : "No organizations match your search or filter."}
+              </p>
             </div>
           )}
 

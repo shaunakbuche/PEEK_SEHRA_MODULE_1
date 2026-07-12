@@ -17,7 +17,7 @@ export default route({
   GET: async (req, res) => {
     await requireAuth(req, "admin");
     const rows = await q<any>(
-      `SELECT o.id, o.name, o.country, o.region, o.created_at,
+      `SELECT o.id, o.name, o.country, o.region, o.created_at, o.archived,
               u.email AS school_email,
               a.id AS assessment_id, a.status AS assessment_status,
               a.submitted_at, a.updated_at,
@@ -34,6 +34,7 @@ export default route({
         name: r.name,
         country: r.country,
         region: r.region,
+        archived: r.archived,
         schoolEmail: r.school_email,
         assessmentId: r.assessment_id,
         assessmentStatus: r.assessment_status ?? "draft",

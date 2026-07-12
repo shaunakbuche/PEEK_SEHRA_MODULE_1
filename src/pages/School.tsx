@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Download, FileText, Printer, Send, X } from "lucide-react";
+import { CheckCircle2, Clock, Download, FileText, Printer, Send } from "lucide-react";
 import { api, type AssessmentPayload } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { hydrate, enableServerSync, disableServerSync, flushNow, completionPct, useStoreVersion, getAll } from "@/lib/store";
 import { TopBar, SaveBadge, StatusPill, ProgressRing } from "@/components/brand";
 import { AssessmentWorkspace, type Section } from "@/components/AssessmentWorkspace";
 import { ReportView } from "@/components/ReportView";
+import { Dialog } from "@/components/Dialog";
 
 type Payload = AssessmentPayload;
 
@@ -14,39 +15,30 @@ function SubmitModal({ open, onClose, onConfirm, busy }: {
   open: boolean; onClose: () => void; onConfirm: () => void; busy: boolean;
 }) {
   useStoreVersion();
-  if (!open) return null;
   const pct = completionPct();
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between">
-          <h3 className="font-serif text-2xl">Submit to Peek?</h3>
-          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Your assessment is <strong className="text-foreground">{pct}% complete</strong>. Once submitted it locks for
-          editing while the Peek team reviews it and prepares your report. They can return it to you if anything
-          needs another look.
-        </p>
-        <div className="mt-6 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold transition hover:border-primary hover:text-primary">
-            Keep editing
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={busy}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60"
-          >
-            <Send className="h-4 w-4" /> {busy ? "Submitting…" : "Submit assessment"}
-          </button>
-        </div>
-      </motion.div>
-    </div>
+    <Dialog open={open} onClose={onClose} labelledBy="submit-modal-title">
+      <div className="flex items-start justify-between">
+        <h3 id="submit-modal-title" className="font-serif text-2xl">Submit to Peek?</h3>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        Your assessment is <strong className="text-foreground">{pct}% complete</strong>. Once submitted it locks for
+        editing while the Peek team reviews it and prepares your report. They can return it to you if anything
+        needs another look.
+      </p>
+      <div className="mt-6 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold transition hover:border-primary hover:text-primary">
+          Keep editing
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={busy}
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60"
+        >
+          <Send className="h-4 w-4" /> {busy ? "Submitting…" : "Submit assessment"}
+        </button>
+      </div>
+    </Dialog>
   );
 }
 
@@ -161,7 +153,7 @@ export default function School() {
       </TopBar>
 
       {error && (
-        <div className="mx-auto mt-6 max-w-3xl rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div role="alert" className="mx-auto mt-6 max-w-3xl rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}

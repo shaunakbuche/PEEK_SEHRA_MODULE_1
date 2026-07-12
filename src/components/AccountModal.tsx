@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { X, UserCog } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { Dialog } from "@/components/Dialog";
 
 /** Stable at module scope so inputs never lose focus while typing. */
 function Row({ label, value, onChange, type = "text", required = false, hint, autoComplete }: {
@@ -36,8 +36,6 @@ export function AccountModal({ open, onClose }: { open: boolean; onClose: () => 
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  if (!open) return null;
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -62,22 +60,16 @@ export function AccountModal({ open, onClose }: { open: boolean; onClose: () => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={onClose}>
-      <motion.form
-        initial={{ opacity: 0, scale: 0.97, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-xl"
-      >
+    <Dialog open={open} onClose={onClose} labelledBy="account-modal-title">
+      <form onSubmit={submit}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/10">
               <UserCog className="h-4.5 w-4.5 text-primary" />
             </span>
-            <h3 className="font-serif text-2xl">Your account</h3>
+            <h3 id="account-modal-title" className="font-serif text-2xl">Your account</h3>
           </div>
-          <button type="button" onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-secondary">
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -102,8 +94,10 @@ export function AccountModal({ open, onClose }: { open: boolean; onClose: () => 
           </div>
         </div>
 
-        {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
-        {saved && <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Saved. Use the new details next time you sign in.</p>}
+        <div role="status" aria-live="polite">
+          {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
+          {saved && <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Saved. Use the new details next time you sign in.</p>}
+        </div>
 
         <div className="mt-6 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">
@@ -113,7 +107,7 @@ export function AccountModal({ open, onClose }: { open: boolean; onClose: () => 
             {busy ? "Saving…" : "Save changes"}
           </button>
         </div>
-      </motion.form>
-    </div>
+      </form>
+    </Dialog>
   );
 }

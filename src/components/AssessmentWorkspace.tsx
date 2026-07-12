@@ -77,6 +77,7 @@ export function AssessmentWorkspace({
                 <button
                   key={s}
                   onClick={() => go(s)}
+                  aria-current={active ? "step" : undefined}
                   className={cn(
                     "flex flex-none items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-[0.8rem] font-medium transition",
                     active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary",

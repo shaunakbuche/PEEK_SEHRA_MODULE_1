@@ -55,8 +55,10 @@ CREATE TABLE IF NOT EXISTS organizations (
   name text NOT NULL,
   country text NOT NULL DEFAULT '',
   region text NOT NULL DEFAULT '',
+  archived boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS archived boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,

@@ -93,18 +93,18 @@ export function TopBar({ context, children }: { context?: string; children?: Rea
             <>
               <button
                 onClick={() => setAccountOpen(true)}
-                title="Account settings"
+                aria-label="Account settings"
                 className="hidden items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground sm:flex"
               >
-                <UserCog className="h-3.5 w-3.5" />
+                <UserCog className="h-3.5 w-3.5" aria-hidden />
                 {user.fullName || user.email}
               </button>
               <button
                 onClick={() => setAccountOpen(true)}
-                title="Account settings"
+                aria-label="Account settings"
                 className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition hover:bg-secondary hover:text-foreground sm:hidden"
               >
-                <UserCog className="h-4 w-4" />
+                <UserCog className="h-4 w-4" aria-hidden />
               </button>
               <button
                 onClick={() => logout().then(() => (window.location.href = "/"))}
@@ -127,7 +127,7 @@ export function ProgressRing({ pct, size = 76 }: { pct: number; size?: number })
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" role="img" aria-label={`${pct} percent complete`}>
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={r} fill="none"
