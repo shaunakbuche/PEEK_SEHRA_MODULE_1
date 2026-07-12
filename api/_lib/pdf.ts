@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { Document, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
-import type { ReportContent } from "../../src/lib/reportTypes";
+import type { ReportContent } from "../../src/lib/reportTypes.js";
 
 const TEAL = "#0F766B";
 const TEAL_DARK = "#06403B";

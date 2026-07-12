@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ApiError } from "./http";
+import { ApiError } from "./http.js";
 
 const COOKIE = "sehra_session";
 const WEEK_S = 60 * 60 * 24 * 7;

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { route, body, ApiError } from "../_lib/http";
-import { qOne } from "../_lib/db";
-import { setSession, verifyPassword } from "../_lib/auth";
+import { route, body, ApiError } from "../_lib/http.js";
+import { qOne } from "../_lib/db.js";
+import { setSession, verifyPassword } from "../_lib/auth.js";
 
 const LoginBody = z.object({
   email: z.string().email(),

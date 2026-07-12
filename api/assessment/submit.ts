@@ -1,6 +1,6 @@
-import { route, ApiError } from "../_lib/http";
-import { requireAuth } from "../_lib/auth";
-import { qOne } from "../_lib/db";
+import { route, ApiError } from "../_lib/http.js";
+import { requireAuth } from "../_lib/auth.js";
+import { qOne } from "../_lib/db.js";
 
 export default route({
   POST: async (req, res) => {

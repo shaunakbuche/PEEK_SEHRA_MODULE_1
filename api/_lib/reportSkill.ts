@@ -1,4 +1,4 @@
-import { ASSESS, SCALE_KEY, THEMES, type Question } from "../../src/data/sehra";
+import { ASSESS, SCALE_KEY, THEMES, type Question } from "../../src/data/sehra.js";
 
 /**
  * The "report-writer skill": the system prompt that turns a completed SEHRA

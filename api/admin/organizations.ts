@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { route, body, ApiError } from "../_lib/http";
-import { requireAuth, hashPassword } from "../_lib/auth";
-import { q, qOne } from "../_lib/db";
+import { route, body, ApiError } from "../_lib/http.js";
+import { requireAuth, hashPassword } from "../_lib/auth.js";
+import { q, qOne } from "../_lib/db.js";
 
 const CreateBody = z.object({
   name: z.string().min(2).max(120),

@@ -1,6 +1,6 @@
-import { route } from "./_lib/http";
-import { ensureSchema, qOne, q } from "./_lib/db";
-import { hashPassword } from "./_lib/auth";
+import { route } from "./_lib/http.js";
+import { ensureSchema, qOne, q } from "./_lib/db.js";
+import { hashPassword } from "./_lib/auth.js";
 
 /**
  * One-time bootstrap. Idempotent and safe to call repeatedly:

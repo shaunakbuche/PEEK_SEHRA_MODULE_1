@@ -1,10 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { route, body, ApiError } from "../../_lib/http";
-import { requireAuth } from "../../_lib/auth";
-import { qOne } from "../../_lib/db";
-import { REPORT_MODEL, REPORT_SKILL_SYSTEM, buildAssessmentDigest, extractJson } from "../../_lib/reportSkill";
-import { ReportContentSchema } from "../../../src/lib/reportTypes";
+import { route, body, ApiError } from "../../_lib/http.js";
+import { requireAuth } from "../../_lib/auth.js";
+import { qOne } from "../../_lib/db.js";
+import { REPORT_MODEL, REPORT_SKILL_SYSTEM, buildAssessmentDigest, extractJson } from "../../_lib/reportSkill.js";
+import { ReportContentSchema } from "../../../src/lib/reportTypes.js";
 
 const GenBody = z.object({ assessmentId: z.string().uuid() });
 

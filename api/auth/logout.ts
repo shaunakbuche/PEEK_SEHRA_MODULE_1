@@ -1,5 +1,5 @@
-import { route } from "../_lib/http";
-import { clearSession } from "../_lib/auth";
+import { route } from "../_lib/http.js";
+import { clearSession } from "../_lib/auth.js";
 
 export default route({
   POST: async (_req, res) => {

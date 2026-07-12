@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { route, body, ApiError } from "../../_lib/http";
-import { requireAuth } from "../../_lib/auth";
-import { q, qOne } from "../../_lib/db";
-import { ReportContentSchema } from "../../../src/lib/reportTypes";
+import { route, body, ApiError } from "../../_lib/http.js";
+import { requireAuth } from "../../_lib/auth.js";
+import { q, qOne } from "../../_lib/db.js";
+import { ReportContentSchema } from "../../../src/lib/reportTypes.js";
 
 const PutBody = z.object({ content: ReportContentSchema });
 

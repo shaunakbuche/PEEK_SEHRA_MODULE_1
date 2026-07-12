@@ -1,10 +1,10 @@
 import { put } from "@vercel/blob";
-import { route, ApiError } from "../../../_lib/http";
-import { requireAuth } from "../../../_lib/auth";
-import { qOne } from "../../../_lib/db";
-import { renderReportPdf } from "../../../_lib/pdf";
-import { renderReportDocx } from "../../../_lib/docxGen";
-import { ReportContentSchema } from "../../../../src/lib/reportTypes";
+import { route, ApiError } from "../../../_lib/http.js";
+import { requireAuth } from "../../../_lib/auth.js";
+import { qOne } from "../../../_lib/db.js";
+import { renderReportPdf } from "../../../_lib/pdf.js";
+import { renderReportDocx } from "../../../_lib/docxGen.js";
+import { ReportContentSchema } from "../../../../src/lib/reportTypes.js";
 
 /**
  * Approve & publish: renders the final PDF and DOCX, uploads both to Vercel

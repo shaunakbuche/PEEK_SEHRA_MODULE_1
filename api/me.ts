@@ -1,6 +1,6 @@
-import { route } from "./_lib/http";
-import { getSession } from "./_lib/auth";
-import { qOne } from "./_lib/db";
+import { route } from "./_lib/http.js";
+import { getSession } from "./_lib/auth.js";
+import { qOne } from "./_lib/db.js";
 
 export default route({
   GET: async (req, res) => {

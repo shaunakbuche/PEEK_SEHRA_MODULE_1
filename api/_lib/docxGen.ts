@@ -2,7 +2,7 @@ import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, LevelFormat, AlignmentType,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, Footer, PageNumber,
 } from "docx";
-import type { ReportContent } from "../../src/lib/reportTypes";
+import type { ReportContent } from "../../src/lib/reportTypes.js";
 
 const TEAL = "0F766B";
 const TEAL_DARK = "06403B";
