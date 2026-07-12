@@ -112,10 +112,10 @@ export const CONTEXT: Component = {
     {
       id: "c.2", title: "Existing school eye health programme", desc: "What is already happening in schools today, if anything. If nothing exists, a simple No is a useful answer.", themes: ["Policy & Integration", "Human Resources"],
       questions: [
-        yn("ctx_seh_prog", "Are there any standalone school eye health programmes or initiatives within the intervention area (not part of another school-based health programme)?", { help: "Standalone means a programme focused on eyes specifically, not eye checks inside a broader school health programme.", lines: ["Who is the implementer (MoH, MoE, NGO)? Who is the funder?", "Scope: location/area, type of schools, classes/grades screened, age range", "Eye health promotion / conditions included? Teachers' eye health?", "Who screens? Referral mechanism? Where are children referred?", "Who does refraction? Where are glasses obtained? Who pays?"] }),
+        yn("ctx_seh_prog", "Is there a standalone school eye health programme running in your area today?", { help: "Standalone means a programme focused on eyes specifically, not eye checks inside a broader school health programme.", lines: ["Who is the implementer (MoH, MoE, NGO)? Who is the funder?", "Scope: location/area, type of schools, classes/grades screened, age range", "Eye health promotion / conditions included? Teachers' eye health?", "Who screens? Referral mechanism? Where are children referred?", "Who does refraction? Where are glasses obtained? Who pays?"] }),
         yn("ctx_teacher_curr", "Does a curriculum for teacher training exist for school health and/or eye health?", { lines: ["Pre-service or in-service? Scope & content?", "Teaching/learning materials? Performance criteria indicators?"] }),
         yn("ctx_nurse_curr", "Does a curriculum for nursing training exist for school health and/or eye health?", { lines: ["Pre-service or in-service? Scope & content?", "Teaching/learning materials? Performance criteria indicators?"] }),
-        yn("ctx_limit_screen", "Do any policies or regulations limit vision screening by teachers?"),
+        yn("ctx_limit_screen", "Do any rules or policies stop teachers from doing vision screening?"),
         txt("ctx_teachers_trained", "How many teachers have been trained on school health or school eye health in the intervention area?"),
       ],
     },
@@ -126,13 +126,13 @@ export const CONTEXT: Component = {
         table("ctx_prev", "Prevalence of refractive errors in children of school-going age", ["Myopia", "Hypermetropia", "Astigmatism", "Specialised / complex refraction"], ["Males and females", "Males", "Females"], { help: "Use published studies or programme data if available. Leave blank if unknown and list your sources below." }),
         txt("ctx_prev_ref", "References (please list and provide a web link if available)"),
         group("ctx_drops", "Are eye drops or eye ointment available at the following levels?", ["School nurse", "Community health level", "Primary health level", "Secondary health level", "Tertiary health level", "Private pharmacies"]),
-        txt("ctx_counsel", "Availability or access to eye health counselling and advice"),
+        txt("ctx_counsel", "How easily can families get eye health advice and counselling?"),
         yn("ctx_referral", "Does a referral pathway exist for school health / school eye health?", { help: "A referral pathway is the agreed route a child follows from being spotted at school to being seen by an eye care service.", lines: ["If 'Yes', please describe"] }),
-        txt("ctx_med", "Availability of medical treatment for child eye conditions"),
-        txt("ctx_surg", "Availability of surgical treatment for child eye conditions"),
-        txt("ctx_lowvision", "Low vision care"),
-        txt("ctx_othercare", "Other care or cross-referral for children"),
-        yn("ctx_nhi", "Coverage of children for eye health in National Health Insurance", { help: "For example, whether a national insurance scheme pays for children's eye tests or spectacles." }),
+        txt("ctx_med", "What medical treatment is available for children's eye conditions?"),
+        txt("ctx_surg", "What surgical treatment is available for children's eye conditions?"),
+        txt("ctx_lowvision", "What support exists for children whose sight cannot be fully corrected (low vision care)?"),
+        txt("ctx_othercare", "What other care or cross-referral exists for children?"),
+        yn("ctx_nhi", "Does national health insurance cover children's eye care?", { help: "For example, whether a national insurance scheme pays for children's eye tests or spectacles." }),
       ],
     },
   ],
@@ -145,7 +145,7 @@ export const COMPONENTS: Component[] = [
     purpose: "To ascertain the degree to which the sectoral policy and strategy environment is conducive for a school eye health programme.",
     subsections: [
       { id: "1.1", title: "Legislation", desc: "Whether school health appears anywhere in national law.", themes: ["Policy & Integration"], questions: [
-        yn("c1_leg", "Is school health included in national legislation frameworks?", { help: "Legislation means laws passed by parliament. Ministry policies and plans come in the next section.", lines: ["What is the context and how does it relate to sector policies?", "What are the implementation frameworks, if any?", "What key factors limit or impede their implementation?"] }),
+        yn("c1_leg", "Does any national law mention school health?", { help: "Legislation means laws passed by parliament. Ministry policies and plans come in the next section.", lines: ["What is the context and how does it relate to sector policies?", "What are the implementation frameworks, if any?", "What key factors limit or impede their implementation?"] }),
       ]},
       { id: "1.2", title: "Policies, Sector Strategies and Plans", desc: "Work through each national policy and mark whether school health or school eye health is mentioned. Your desk review covers most of this.", themes: ["Policy & Integration"], questions: [
         note("Determine the status of school health / school eye health in these policies, sector strategies and plans:"),
@@ -200,8 +200,8 @@ export const COMPONENTS: Component[] = [
       { id: "2.4", title: "Community level", desc: "Eye care available where people live, and any screening happening in the community.", themes: ["Accessibility & Disability", "Human Resources"], questions: [
         yn("c2_pec", "Is primary eye care available in the intervention area?"),
         yn("c2_pec_promo", "Does primary eye care include eye health promotion and prevention for school-age (5–18) and pre-school (1–4) children?"),
-        yn("c2_pec_refr", "Is there a cadre at primary level able to provide refraction to school-age children?", { lines: ["Who are they?"] }),
-        yn("c2_pec_detect", "Is there a cadre at primary level able to detect other eye conditions in school-age children?", { lines: ["Who are they?"] }),
+        yn("c2_pec_refr", "At primary care level, is there anyone trained to test children's vision and prescribe glasses?", { lines: ["Who are they?"] }),
+        yn("c2_pec_detect", "At primary care level, is there anyone trained to spot other eye conditions in children?", { lines: ["Who are they?"] }),
         yn("c2_pec_link", "Are primary eye care services linked with school health?"),
         yn("c2_comm_screen", "Are health screening programmes being undertaken in the community (outside schools)?", { lines: ["Do any include school-age children?"] }),
         yn("c2_student_screen", "Are there screening activities for school health by senior / junior students?"),
@@ -218,8 +218,8 @@ export const COMPONENTS: Component[] = [
         yn("c2_enablers", "Are there known factors (enablers) that facilitate referral uptake for children with eye conditions?", { lines: ["If 'Yes', please describe"] }),
       ]},
       { id: "2.8", title: "Data", desc: "What the routine data systems in health and education capture about children's eyes.", themes: ["Data Limitations"], questions: [
-        yn("c2_emis", "Are there indicators related to the health of children within the EMIS?", { help: "EMIS is the education sector's routine data system, where schools report enrolment and other indicators.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › education authorities?"] }),
-        yn("c2_hmis", "Are there indicators related to eye health within the HMIS / DHIS?", { help: "HMIS or DHIS is the health sector's routine data system, often DHIS2.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › health authorities?"] }),
+        yn("c2_emis", "Does the education data system (EMIS) track anything about children's health?", { help: "EMIS is the education sector's routine data system, where schools report enrolment and other indicators.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › education authorities?"] }),
+        yn("c2_hmis", "Does the health data system (HMIS or DHIS) track anything about eye health?", { help: "HMIS or DHIS is the health sector's routine data system, often DHIS2.", thirdOption: "This does not exist", lines: ["Indicators linked to school eye health?", "Information flow schools › health authorities?"] }),
         yn("c2_datashare", "Is there coordination or data sharing between education and health authorities on school children's health?", { thirdOption: "This does not exist" }),
         yn("c2_me", "Does a monitoring, evaluation and/or supportive supervision framework exist in the intervention area?", { thirdOption: "This does not exist" }),
       ]},
@@ -231,15 +231,15 @@ export const COMPONENTS: Component[] = [
     purpose: "To find out if the right people, with the right skills, in the right place, are in enough numbers to operationalise a school eye health programme.",
     subsections: [
       { id: "3.1", title: "Type of Cadres / Health", desc: "The health workers available, from community health workers to ophthalmologists. Rough counts are fine.", themes: ["Human Resources"], questions: [
-        yn("c3_h_avail", "Are essential health human resources available to implement school health / school eye health?"),
-        yn("c3_h_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
+        yn("c3_h_avail", "Does your area have the health workers needed to run school eye health?"),
+        yn("c3_h_curr", "Is there a curriculum to train them on school eye health, or have they already been trained?"),
         table("c3_h_count", "Type and number of essential health human resources in the intervention area", SECTORS, ["Community health workers", "Primary eye care workers", "Mid-level eye care personnel", "Nurses / school nurses", "Refractionists / Optometrists", "Optical personnel (dispensing)", "Ophthalmologists", "Paediatric ophthalmologists & squint specialists", "Programme managers"], { help: "Approximate counts are fine. Leave cells blank where a cadre does not exist." }),
         txt("c3_h_capdev", "What additional capacity development needs are likely required?"),
         txt("c3_h_opp", "Opportunities to enhance their knowledge, skills and competencies?"),
       ]},
       { id: "3.2", title: "Type of Cadres / Education", desc: "The teachers and school staff who could support screening and referral.", themes: ["Human Resources"], questions: [
-        yn("c3_e_avail", "Are essential education human resources available to implement school health / school eye health?"),
-        yn("c3_e_curr", "Does a curriculum exist to train them / are they trained on school eye health?"),
+        yn("c3_e_avail", "Does your area have the teachers and school staff needed to run school eye health?"),
+        yn("c3_e_curr", "Is there a curriculum to train them on school eye health, or have they already been trained?"),
         table("c3_e_count", "Type and number of essential education human resources in the intervention area", SECTORS, ["Head teachers", "Class & contact teachers", "Special education teachers"]),
         txt("c3_e_capdev", "What additional capacity development needs are likely required?"),
         txt("c3_e_opp", "Opportunities to enhance their knowledge, skills and competencies?"),
@@ -267,19 +267,19 @@ export const COMPONENTS: Component[] = [
       ]},
       { id: "4.3", title: "Availability of eyeglasses", desc: "Whether children's frames and lenses can genuinely be bought locally.", themes: ["Supply Chain"], questions: [
         table("c4_glasses", "Availability of eyeglasses within the intervention area", ["Available?", "Local / imported / both", "Local distributor?", "Customs duties & VAT", "Notes"], ["Children's frames", "Spherical lenses", "Cylindrical lenses", "Ready-made distance eyeglasses", "Ready-to-clip lenses and frames"]),
-        yn("c4_ethnic_frames", "Are frame sizes adapted to local ethnic facial features available?"),
+        yn("c4_ethnic_frames", "Can you get frames locally that fit local children's faces well?"),
       ]},
       { id: "4.4", title: "Costing of eyeglasses (local currency)", desc: "What glasses cost, set against what families earn.", themes: ["Cost & Affordability"], questions: [
         field("c4_minwage", "What is the minimum wage in local currency?", { help: "A reference point for judging whether spectacle prices are affordable locally." }),
         table("c4_costing", "Average retail cost / Simple (≤±2D), High-power (>±5D), Complex (astigmatism)", ["Simple / Public", "Simple / Private", "High / Public", "High / Private", "Complex / Public", "Complex / Private", "Remarks"], ["Custom prescription glasses", "Ready-made distance glasses", "Ready-made reading glasses", "Ready-to-clip lenses and frames"], { help: "Use local currency and rough averages. Simple means up to plus or minus 2D, high-power over 5D, complex means any astigmatism." }),
       ]},
       { id: "4.5", title: "Capacity to pay", desc: "Whether families, insurance or government schemes can cover the costs.", themes: ["Cost & Affordability", "Funding & Resources"], questions: [
-        yn("c4_wtp", "Information on willingness or capacity to pay for eyeglasses?", { help: "Any study, survey or programme record showing what families can or will pay for spectacles.", lines: ["What is the capacity to pay?"] }),
+        yn("c4_wtp", "Is there any information on what families can or will pay for glasses?", { help: "Any study, survey or programme record showing what families can or will pay for spectacles.", lines: ["What is the capacity to pay?"] }),
         yn("c4_ins_screen", "Does insurance / government mechanism cover vision screening / refraction?", { lines: ["Coverage for adults?", "Coverage for school-age children?"] }),
         yn("c4_ins_glasses", "Does insurance / government mechanism cover the cost of eyeglasses?", { lines: ["Coverage for adults?", "Coverage for school-age children?"] }),
       ]},
       { id: "4.6", title: "Consumables", desc: "Basic eye medicines in the public system.", themes: ["Supply Chain"], questions: [
-        yn("c4_cons_list", "Are anti-biotic eyedrops / ointment on the MoH Essential Medicines List?"),
+        yn("c4_cons_list", "Are antibiotic eye drops or ointment on the national Essential Medicines List?"),
         yn("c4_cons_primary", "Available in the public sector at primary health care level?"),
         yn("c4_cons_secondary", "Available in the public sector at secondary health care level?"),
         yn("c4_cons_tertiary", "Available in the public sector at tertiary health care level?"),
@@ -300,18 +300,18 @@ export const COMPONENTS: Component[] = [
     purpose: "A cross-cutting component: to explore barriers that would hinder delivery of child eye health services through a school eye health programme.",
     subsections: [
       { id: "5.1", title: "Cultural perceptions", desc: "Whether some children's health is treated as a lower priority in practice.", themes: ["Social & Cultural Factors"], questions: [
-        yn("c5_child", "Evidence that the health of children is not prioritised in the intervention area?"),
-        yn("c5_girls", "Evidence that the health needs of girls are not prioritised?"),
-        yn("c5_ethnic", "Evidence that the health needs of specific ethnic groups are not prioritised?"),
+        yn("c5_child", "Is there evidence that children's health is not treated as a priority in your area?"),
+        yn("c5_girls", "Is there evidence that girls' health needs get less attention?"),
+        yn("c5_ethnic", "Is there evidence that some ethnic groups' health needs get less attention?"),
       ]},
       { id: "5.2", title: "Barriers to wearing eyeglasses / parents & children", desc: "Why children who need glasses might not get them or wear them. Tick everything that applies; skip what you have no information on.", themes: ["Social & Cultural Factors", "Health Literacy", "Cost & Affordability", "Accessibility & Disability"], questions: [
-        yn("c5_info", "Is information available on barriers that limit spectacle wear among children, applicable to the intervention area?"),
+        yn("c5_info", "Is there any local information on why children do not wear the glasses they need?"),
         group("c5_perception", "Barriers / perception & awareness", ["Fears about wearing eyeglasses", "Unacceptable colour, style or quality", "Low literacy levels of parents", "Lack of information about screening and use of eyeglasses", "No felt need by parents", "Misinformation and misconceptions about eyeglasses", "Cultural beliefs and practices about eye health and use of eyeglasses", "Traditional / religious beliefs prevent or delay treatment of children who need eyeglasses", "Child's vision affected by witchcraft", "Bullying and teasing", "Other stigma", "Lack of clear messaging on the benefits of eyeglasses", "Lack of clear communication on the processes involved in a school eye health programme"]),
         group("c5_costs", "Barriers / costs", ["Fear of loss of earnings / daily wages by parents to access eyeglasses", "Limited availability of financial resources in family to procure eyeglasses", "Travel cost to point of referral", "Cost of eyeglasses", "Cost of eye care treatment"]),
         group("c5_access", "Barriers / access & accessibility", ["Long distance to point of referral to obtain eyeglasses", "Long distance to point of referral for eye care treatment", "Delay in dispensing of eyeglasses", "Lack of person to accompany child to referral centre for eyeglasses or eye care treatment", "Waiting time between screening and eye care treatment or provision of eyeglasses", "Seasonal variation that limits access to eye health services", "Lack of trust by parents in personnel conducting screening", "Lack of trust by parents in eye care service provider at referral centre", "Children with disabilities cannot access screening", "Children with disabilities cannot access referral centre", "Other"]),
       ]},
       { id: "5.3", title: "Barriers to the delivery of programmes", desc: "Obstacles inside the system itself: staffing, supplies, financing and service delivery.", themes: ["Human Resources", "Supply Chain", "Funding & Resources", "Accessibility & Disability"], questions: [
-        yn("c5_system", "Barriers within the health or education system preventing uptake by school-age children?"),
+        yn("c5_system", "Do barriers inside the health or education system stop children from getting glasses or eye care?"),
         group("c5_hr", "Barriers / Human Resources", ["Screeners (e.g. teachers or nurses) inadequately trained", "Teachers do not have time to screen", "Lack of eye care professionals to receive and attend to referrals", "Poor attitude / behaviours of education personnel at the point of screening", "Poor attitude and behaviours of eye health personnel at referral centres"]),
         group("c5_supply", "Barriers / Supply Chain", ["No eyeglasses suitable for children available within the intervention area"]),
         group("c5_finance", "Barriers / Financing", ["Inadequate state investment in school health services", "Eyeglasses not included in health insurance or other state financing mechanism"]),

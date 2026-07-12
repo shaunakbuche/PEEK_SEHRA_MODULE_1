@@ -115,7 +115,7 @@ function FieldQ({ q }: { q: Extract<Question, { type: "field" }> }) {
   return (
     <QuestionShell>
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-[0.95rem] text-foreground">{q.text}</label>
+        <label className="text-base text-foreground">{q.text}</label>
         <input
           value={v}
           onChange={(e) => setField(q.id, e.target.value)}
@@ -181,12 +181,48 @@ function Cell({ id }: { id: string }) {
   );
 }
 
+/** A labeled input used by the single-row grid layout. */
+function LabeledCell({ id, label }: { id: string; label: string }) {
+  const v = useField(id);
+  return (
+    <label className="block">
+      <span className="mb-1 block text-[0.72rem] font-medium leading-tight text-muted-foreground">{label}</span>
+      <input
+        value={v}
+        onChange={(e) => setField(id, e.target.value)}
+        className="w-full rounded-md border border-input bg-card px-2.5 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+      />
+    </label>
+  );
+}
+
+// Generic row captions that add no information, so they are hidden in the grid layout.
+const GENERIC_ROW = /^(number of children|enrolment|attendance|dates|health structure|education structure|stakeholders)$/i;
+
 function TableQ({ q }: { q: Extract<Question, { type: "table" }> }) {
+  // A single-row table is really just a set of labeled fields. Render it as a
+  // clean responsive grid instead of a cramped one-line spreadsheet.
+  if (q.rows.length === 1) {
+    const showCaption = !GENERIC_ROW.test(q.rows[0].trim());
+    return (
+      <QuestionShell>
+        <div className="mb-1 text-base leading-relaxed text-foreground">{q.text}</div>
+        <Help text={q.help} />
+        {showCaption && <div className="mt-1 text-[0.8rem] font-medium text-muted-foreground">{q.rows[0]}</div>}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {q.cols.map((c, ci) => (
+            <LabeledCell key={ci} id={`${q.id}__0_${ci}`} label={c} />
+          ))}
+        </div>
+      </QuestionShell>
+    );
+  }
+
   return (
     <QuestionShell>
-      <div className="mb-1 text-[0.95rem] leading-relaxed text-foreground">{q.text}</div>
+      <div className="mb-1 text-base leading-relaxed text-foreground">{q.text}</div>
       <Help text={q.help} />
-      <div className="tbl-scroll mt-2.5 overflow-x-auto rounded-md border border-border">
+      <div className="tbl-scroll mt-2.5 overflow-x-auto rounded-lg border border-border">
         <table className="w-full min-w-[520px] border-collapse">
           <thead>
             <tr>
@@ -198,7 +234,7 @@ function TableQ({ q }: { q: Extract<Question, { type: "table" }> }) {
           </thead>
           <tbody>
             {q.rows.map((r, ri) => (
-              <tr key={ri}>
+              <tr key={ri} className="even:bg-secondary/20">
                 <th className="border-t border-border bg-secondary/40 p-2.5 text-left align-top text-[0.8rem] font-medium text-foreground">{r}</th>
                 {q.cols.map((_, ci) => (
                   <td key={ci} className="border-l border-t border-border p-0 align-top"><Cell id={`${q.id}__${ri}_${ci}`} /></td>
