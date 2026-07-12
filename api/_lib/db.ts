@@ -1,8 +1,30 @@
-import { db } from "@vercel/postgres";
+import { Pool } from "pg";
+
+/**
+ * Standard node-postgres pool, not the Neon-specific @vercel/postgres client.
+ * Works against any Postgres provider (Supabase, Neon, RDS, etc.) since it
+ * speaks plain wire-protocol Postgres over TCP+SSL rather than a proprietary
+ * HTTP/WebSocket gateway.
+ */
+let pool: Pool | null = null;
+function getPool(): Pool {
+  if (!pool) {
+    const connectionString = process.env.POSTGRES_URL;
+    if (!connectionString) {
+      throw new Error("POSTGRES_URL is not set. Create a Postgres store in the Vercel dashboard and redeploy.");
+    }
+    pool = new Pool({
+      connectionString,
+      ssl: connectionString.includes("sslmode=disable") ? false : { rejectUnauthorized: false },
+      max: 3,
+    });
+  }
+  return pool;
+}
 
 /** Parametrized query helper. */
 export async function q<T = any>(text: string, params: unknown[] = []): Promise<T[]> {
-  const res = await db.query(text, params as any[]);
+  const res = await getPool().query(text, params as any[]);
   return res.rows as T[];
 }
 
@@ -65,5 +87,5 @@ CREATE TABLE IF NOT EXISTS report_edits (
 `;
 
 export async function ensureSchema() {
-  await db.query(SCHEMA_SQL);
+  await getPool().query(SCHEMA_SQL);
 }
