@@ -318,7 +318,7 @@ function ReportEditor({ reportId, initial, onPublished }: {
     try {
       if (dirty) await api.put(`/api/admin/reports/${reportId}`, { content });
       const { report } = await api.post<{ report: { pdfUrl: string | null; docxUrl: string | null } }>(
-        `/api/admin/reports/${reportId}/approve`
+        `/api/admin/reports/${reportId}`
       );
       setDirty(false);
       setConfirmOpen(false);

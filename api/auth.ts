@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { route, body, ApiError } from "../_lib/http.js";
-import { qOne } from "../_lib/db.js";
-import { setSession, verifyPassword } from "../_lib/auth.js";
-import { checkRateLimit, recordFailure, clearFailures, clientIp } from "../_lib/rateLimit.js";
+import { route, body, ApiError } from "./_lib/http.js";
+import { qOne } from "./_lib/db.js";
+import { setSession, clearSession, verifyPassword } from "./_lib/auth.js";
+import { checkRateLimit, recordFailure, clearFailures, clientIp } from "./_lib/rateLimit.js";
 
 const LoginBody = z.object({
   email: z.string().email(),
@@ -10,6 +10,7 @@ const LoginBody = z.object({
 });
 
 export default route({
+  /** Sign in. */
   POST: async (req, res) => {
     const parsed = LoginBody.safeParse(body(req));
     if (!parsed.success) throw new ApiError(400, "Enter a valid email and password");
@@ -38,5 +39,11 @@ export default route({
     res.status(200).json({
       user: { id: user.id, email: user.email, role: user.role, fullName: user.full_name },
     });
+  },
+
+  /** Sign out. */
+  DELETE: async (_req, res) => {
+    clearSession(res);
+    res.status(200).json({ ok: true });
   },
 });

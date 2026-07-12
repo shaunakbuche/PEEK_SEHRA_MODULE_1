@@ -26,7 +26,7 @@ export default function Login() {
     setBusy(true);
     setError("");
     try {
-      await api.post("/api/auth/login", { email, password });
+      await api.post("/api/auth", { email, password });
       const user = await refresh();
       navigate(user?.role === "admin" ? "/admin" : "/app", { replace: true });
     } catch (err: any) {
