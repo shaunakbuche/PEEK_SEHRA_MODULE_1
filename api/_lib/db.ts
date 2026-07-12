@@ -64,8 +64,10 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash text NOT NULL,
   role text NOT NULL CHECK (role IN ('school','admin')),
   full_name text NOT NULL DEFAULT '',
+  token_version integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version integer NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS assessments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,

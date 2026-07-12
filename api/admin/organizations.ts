@@ -15,7 +15,7 @@ const CreateBody = z.object({
 export default route({
   /** List every organization with assessment + report status for the dashboard. */
   GET: async (req, res) => {
-    requireAuth(req, "admin");
+    await requireAuth(req, "admin");
     const rows = await q<any>(
       `SELECT o.id, o.name, o.country, o.region, o.created_at,
               u.email AS school_email,
@@ -47,7 +47,7 @@ export default route({
 
   /** Create an organization plus its school login, and its empty assessment. */
   POST: async (req, res) => {
-    requireAuth(req, "admin");
+    await requireAuth(req, "admin");
     const parsed = CreateBody.safeParse(body(req));
     if (!parsed.success) {
       throw new ApiError(400, parsed.error.issues[0]?.message || "Invalid input");

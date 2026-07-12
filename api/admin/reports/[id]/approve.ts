@@ -13,7 +13,7 @@ import { ReportContentSchema } from "../../../../src/lib/reportTypes.js";
  */
 export default route({
   POST: async (req, res) => {
-    const session = requireAuth(req, "admin");
+    const session = await requireAuth(req, "admin");
     const id = req.query.id as string;
 
     if (!process.env.BLOB_READ_WRITE_TOKEN) {

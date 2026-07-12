@@ -8,7 +8,7 @@ const PutBody = z.object({ content: ReportContentSchema });
 
 export default route({
   GET: async (req, res) => {
-    requireAuth(req, "admin");
+    await requireAuth(req, "admin");
     const id = req.query.id as string;
     const report: any = await qOne(
       `SELECT r.*, a.org_id, a.status AS assessment_status, o.name AS org_name, o.country AS org_country
@@ -35,7 +35,7 @@ export default route({
 
   /** Save Peek's edits to the report content. */
   PUT: async (req, res) => {
-    const session = requireAuth(req, "admin");
+    const session = await requireAuth(req, "admin");
     const id = req.query.id as string;
     const parsed = PutBody.safeParse(body(req));
     if (!parsed.success) throw new ApiError(400, "Invalid report content");

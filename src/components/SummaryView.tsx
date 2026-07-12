@@ -19,24 +19,30 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
   useStoreVersion();
   const pct = completionPct();
 
-  const reflRows = (type: "challenge" | "support") =>
-    COMPONENTS.map((c) => {
-      const items = [0, 1, 2].map((i) => getField(`${c.id}__${type}_${i}`)).filter((x) => x && x.trim());
-      return (
-        <tr key={c.id}>
-          <td className="p-3.5 border-t border-border font-semibold text-primary-600 w-[230px] align-top">
+  const reflItems = (type: "challenge" | "support") =>
+    COMPONENTS.map((c) => ({
+      c,
+      items: [0, 1, 2].map((i) => getField(`${c.id}__${type}_${i}`)).filter((x) => x && x.trim()),
+    }));
+
+  const ReflectionList = ({ type }: { type: "challenge" | "support" }) => (
+    <div className="mb-7 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+      {reflItems(type).map(({ c, items }) => (
+        <div key={c.id} className="grid gap-1 p-4 sm:grid-cols-[220px_1fr] sm:gap-4 sm:p-3.5">
+          <div className="font-semibold text-primary-600">
             Component {c.number}: {COMPONENT_TITLES[c.id]}
-          </td>
-          <td className="p-3.5 border-t border-border align-top text-[0.92rem]">
+          </div>
+          <div className="text-[0.92rem]">
             {items.length ? (
-              <ul className="list-disc pl-4 space-y-1">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
+              <ul className="list-disc space-y-1 pl-4">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
             ) : (
               <span className="italic text-muted-foreground/60">Add your notes at the end of Component {c.number} and they will show here.</span>
             )}
-          </td>
-        </tr>
-      );
-    });
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div>
@@ -74,16 +80,10 @@ export function SummaryView({ onSubmit }: { onSubmit: () => void }) {
       </div>
 
       <h3 className="mb-3 font-serif text-xl">What might make this difficult</h3>
-      <table className="mb-7 w-full border-collapse overflow-hidden rounded-lg border border-border bg-card">
-        <thead><tr><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Area</th><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Points raised</th></tr></thead>
-        <tbody>{reflRows("challenge")}</tbody>
-      </table>
+      <ReflectionList type="challenge" />
 
       <h3 className="mb-3 font-serif text-xl">What is already working in your favour</h3>
-      <table className="mb-7 w-full border-collapse overflow-hidden rounded-lg border border-border bg-card">
-        <thead><tr><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Area</th><th className="bg-secondary p-3 text-left text-[0.72rem] uppercase tracking-wide text-muted-foreground">Points raised</th></tr></thead>
-        <tbody>{reflRows("support")}</tbody>
-      </table>
+      <ReflectionList type="support" />
 
       <h3 className="mb-3 font-serif text-xl">A few last things</h3>
       <div className="mb-7 rounded-lg border border-border bg-card px-5">

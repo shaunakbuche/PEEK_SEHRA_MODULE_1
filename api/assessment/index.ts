@@ -23,7 +23,7 @@ const PatchBody = z.object({
 export default route({
   /** School: own assessment. Admin: ?orgId=<uuid>. Includes the report when visible. */
   GET: async (req, res) => {
-    const session = requireAuth(req);
+    const session = await requireAuth(req);
     let orgId: string;
     if (session.role === "admin") {
       const query = (req.query.orgId as string) || "";
@@ -64,7 +64,7 @@ export default route({
 
   /** School autosave: merge a patch of answer keys into the answers jsonb. */
   PUT: async (req, res) => {
-    const session = requireAuth(req, "school");
+    const session = await requireAuth(req, "school");
     if (!session.orgId) throw new ApiError(400, "Your login has no organization attached");
     const parsed = PatchBody.safeParse(body(req));
     if (!parsed.success) throw new ApiError(400, "Invalid patch");

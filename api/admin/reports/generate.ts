@@ -13,7 +13,7 @@ const lastRun = new Map<string, number>();
 
 export default route({
   POST: async (req, res) => {
-    const session = requireAuth(req, "admin");
+    const session = await requireAuth(req, "admin");
 
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new ApiError(500, "AI report generation unavailable. Set ANTHROPIC_API_KEY in Vercel environment variables.");

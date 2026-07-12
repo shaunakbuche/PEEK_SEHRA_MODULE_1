@@ -11,7 +11,7 @@ const PatchBody = z.object({
 export default route({
   /** Admin: send an assessment back to the school for changes. */
   PATCH: async (req, res) => {
-    requireAuth(req, "admin");
+    await requireAuth(req, "admin");
     const id = req.query.id as string;
     const parsed = PatchBody.safeParse(body(req));
     if (!parsed.success) throw new ApiError(400, "Invalid request");

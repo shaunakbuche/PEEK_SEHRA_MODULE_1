@@ -4,7 +4,7 @@ import { qOne } from "../_lib/db.js";
 
 export default route({
   POST: async (req, res) => {
-    const session = requireAuth(req, "school");
+    const session = await requireAuth(req, "school");
     if (!session.orgId) throw new ApiError(400, "Your login has no organization attached");
 
     const assessment: any = await qOne(`SELECT * FROM assessments WHERE org_id = $1`, [session.orgId]);

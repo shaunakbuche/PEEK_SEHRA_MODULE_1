@@ -136,7 +136,7 @@ export async function renderReportDocx(content: ReportContent, meta: { org: stri
 
           heading("Component findings"),
           ...content.components.flatMap((c, i) => [
-            heading(`Component ${i + 1}: ${c.name} — ${c.indicatorLevel || "Not set"}`, HeadingLevel.HEADING_2),
+            heading(`Component ${i + 1}: ${c.name} (${c.indicatorLevel || "Not set"})`, HeadingLevel.HEADING_2),
             para(c.findings),
             ...(c.challenges.length
               ? [new Paragraph({ children: [new TextRun({ text: "Challenges", bold: true })], spacing: { after: 80 } }), ...bulletList(c.challenges)]

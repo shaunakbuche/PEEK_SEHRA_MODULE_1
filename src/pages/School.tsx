@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Download, FileText, Send, X } from "lucide-react";
+import { CheckCircle2, Clock, Download, FileText, Printer, Send, X } from "lucide-react";
 import { api, type AssessmentPayload } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { hydrate, enableServerSync, disableServerSync, flushNow, completionPct, useStoreVersion, getAll } from "@/lib/store";
@@ -205,7 +205,7 @@ export default function School() {
       {/* approved: the final report */}
       {a && a.status === "approved" && report && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-3xl px-6 py-14">
-          <div className="mb-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+          <div className="no-print mb-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                 <CheckCircle2 className="h-4 w-4" /> Approved by Peek Vision
@@ -217,7 +217,7 @@ export default function School() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">Your final scoping report is ready.</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {report.pdfUrl && (
                 <a href={report.pdfUrl} target="_blank" rel="noopener" className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600">
                   <Download className="h-4 w-4" /> PDF
@@ -228,9 +228,14 @@ export default function School() {
                   <Download className="h-4 w-4" /> Word
                 </a>
               )}
+              <button onClick={() => window.print()} className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary">
+                <Printer className="h-4 w-4" /> Print
+              </button>
             </div>
           </div>
-          <ReportView content={report.content} />
+          <div id="print-report">
+            <ReportView content={report.content} />
+          </div>
         </motion.div>
       )}
 
