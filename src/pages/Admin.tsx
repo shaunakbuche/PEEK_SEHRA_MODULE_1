@@ -16,6 +16,27 @@ import { cn } from "@/lib/utils";
 /* Create organization                                                  */
 /* ------------------------------------------------------------------ */
 
+/** Stable input row, defined at module scope so it never remounts on keystroke. */
+function OrgField({ label, value, onChange, type = "text", required = true, hint }: {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  type?: string;
+  required?: boolean;
+  hint?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+      <input
+        type={type} required={required} value={value} onChange={onChange}
+        className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+      />
+      {hint && <span className="mt-1 block text-[0.7rem] text-muted-foreground">{hint}</span>}
+    </label>
+  );
+}
+
 function CreateOrgModal({ open, onClose, onCreated }: {
   open: boolean; onClose: () => void; onCreated: () => void;
 }) {
@@ -43,19 +64,6 @@ function CreateOrgModal({ open, onClose, onCreated }: {
     }
   };
 
-  const Field = ({ label, k, type = "text", required = true, hint }: {
-    label: string; k: keyof typeof form; type?: string; required?: boolean; hint?: string;
-  }) => (
-    <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
-      <input
-        type={type} required={required} value={form[k]} onChange={set(k)}
-        className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-      />
-      {hint && <span className="mt-1 block text-[0.7rem] text-muted-foreground">{hint}</span>}
-    </label>
-  );
-
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm" onClick={onClose}>
       <motion.form
@@ -69,12 +77,12 @@ function CreateOrgModal({ open, onClose, onCreated }: {
         </div>
         <p className="mt-1 text-sm text-muted-foreground">Creates the organization and the login you will share with them.</p>
         <div className="mt-5 grid gap-3.5 sm:grid-cols-2">
-          <Field label="Organization / school" k="name" />
-          <Field label="Country" k="country" />
-          <Field label="Region / province" k="region" required={false} />
-          <Field label="Contact name" k="fullName" required={false} />
-          <Field label="Login email" k="email" type="email" />
-          <Field label="Temporary password" k="password" hint="At least 8 characters. Share it with the school." />
+          <OrgField label="Organization / school" value={form.name} onChange={set("name")} />
+          <OrgField label="Country" value={form.country} onChange={set("country")} />
+          <OrgField label="Region / province" value={form.region} onChange={set("region")} required={false} />
+          <OrgField label="Contact name" value={form.fullName} onChange={set("fullName")} required={false} />
+          <OrgField label="Login email" type="email" value={form.email} onChange={set("email")} />
+          <OrgField label="Temporary password" value={form.password} onChange={set("password")} hint="At least 8 characters. Share it with the school." />
         </div>
         {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
         <div className="mt-6 flex justify-end gap-2">
