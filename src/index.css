@@ -6,26 +6,29 @@
 
 @layer base {
   :root {
+    /* Ink and primary both drawn from Peek Vision's real logo colour
+       (#002730, confirmed from peekvision.org's own SVG), differentiated by
+       lightness rather than hue so the whole palette reads as one family. */
     --background: 0 0% 100%;
-    --foreground: 196 26% 14%;
+    --foreground: 191 45% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 196 26% 14%;
+    --card-foreground: 191 45% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 196 26% 14%;
+    --popover-foreground: 191 45% 12%;
 
-    --primary: 178 66% 26%;
+    --primary: 189 66% 26%;
     --primary-foreground: 0 0% 100%;
-    --primary-50: 178 44% 96%;
-    --primary-500: 178 58% 34%;
-    --primary-600: 180 70% 22%;
+    --primary-50: 189 44% 96%;
+    --primary-500: 189 58% 34%;
+    --primary-600: 189 70% 22%;
 
-    --secondary: 180 28% 96%;
-    --secondary-foreground: 196 26% 18%;
+    --secondary: 189 28% 96%;
+    --secondary-foreground: 191 40% 16%;
 
-    --muted: 200 16% 96%;
-    --muted-foreground: 200 8% 44%;
+    --muted: 195 16% 96%;
+    --muted-foreground: 195 8% 44%;
 
     --accent: 12 64% 52%;
     --accent-foreground: 0 0% 100%;
@@ -33,9 +36,9 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 196 16% 90%;
-    --input: 196 16% 85%;
-    --ring: 178 66% 26%;
+    --border: 195 16% 90%;
+    --input: 195 16% 85%;
+    --ring: 189 66% 26%;
 
     --radius: 0.55rem;
   }

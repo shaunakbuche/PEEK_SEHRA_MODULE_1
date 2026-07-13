@@ -4,9 +4,9 @@ import {
 } from "docx";
 import type { ReportContent } from "../../src/lib/reportTypes.js";
 
-const TEAL = "0F766B";
-const TEAL_DARK = "06403B";
-const TEAL_LIGHT = "E4F2F0";
+const TEAL = "17616E";
+const TEAL_DARK = "11545F";
+const TEAL_LIGHT = "F0F8F9";
 
 const INDICATOR_FILLS: Record<string, string> = {
   "Low Potential": "F8DDD6",

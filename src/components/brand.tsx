@@ -6,29 +6,16 @@ import { useSaveState } from "@/lib/store";
 import { CloudUpload, Check, LogOut, WifiOff, UserCog } from "lucide-react";
 import type { AssessmentStatus } from "@/lib/api";
 import { AccountModal } from "@/components/AccountModal";
+import { PeekLogo } from "@/components/PeekLogo";
 
-export function EyeMark({ className }: { className?: string }) {
+/** Peek Vision's real logo (already reads "peek vision") paired with the SEHRA sub-brand label. */
+export function Wordmark({ context }: { context?: string }) {
   return (
-    <svg viewBox="0 0 36 22" className={className} fill="none" aria-hidden>
-      <path
-        d="M2 11C7 3.5 14 1.5 18 1.5C22 1.5 29 3.5 34 11C29 18.5 22 20.5 18 20.5C14 20.5 7 18.5 2 11Z"
-        stroke="hsl(var(--primary))"
-        strokeWidth="1.6"
-      />
-      <circle cx="18" cy="11" r="5" fill="hsl(var(--primary))" />
-      <circle cx="18" cy="11" r="1.8" fill="hsl(var(--background))" />
-      <circle cx="16.2" cy="9.2" r="0.9" fill="hsl(var(--background))" opacity="0.7" />
-    </svg>
-  );
-}
-
-export function Wordmark({ sub = "Peek Vision" }: { sub?: string }) {
-  return (
-    <span className="flex items-center gap-2.5">
-      <EyeMark className="h-6 w-9" />
-      <span className="text-left leading-none">
-        <span className="block font-serif text-base tracking-tight text-foreground">SEHRA</span>
-        <span className="block text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">{sub}</span>
+    <span className="flex items-center gap-3">
+      <PeekLogo className="h-[22px] w-auto text-foreground" />
+      <span className="h-5 w-px bg-border" aria-hidden />
+      <span className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        SEHRA{context ? ` · ${context}` : ""}
       </span>
     </span>
   );
@@ -85,7 +72,7 @@ export function TopBar({ context, children }: { context?: string; children?: Rea
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-[57px] max-w-6xl items-center gap-4 px-6">
         <Link to="/" className="transition-opacity hover:opacity-80">
-          <Wordmark sub={context ?? "Peek Vision"} />
+          <Wordmark context={context} />
         </Link>
         <div className="ml-auto flex items-center gap-3">
           {children}

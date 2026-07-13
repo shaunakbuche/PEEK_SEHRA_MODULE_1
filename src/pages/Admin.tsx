@@ -757,7 +757,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopBar context="Peek Vision · Admin" />
+      <TopBar context="Admin" />
 
       {selected ? (
         <OrgDetail org={selected} onBack={() => { setSelected(null); load(); }} onChanged={load} />
@@ -774,7 +774,7 @@ export default function Admin() {
               </button>
               <button
                 onClick={() => setCreateOpen(true)}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-10px_hsl(178_66%_26%/0.5)] transition hover:-translate-y-0.5 hover:bg-primary-600"
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-10px_hsl(189_66%_26%/0.5)] transition hover:-translate-y-0.5 hover:bg-primary-600"
               >
                 <Plus className="h-4 w-4" /> New organization
               </button>

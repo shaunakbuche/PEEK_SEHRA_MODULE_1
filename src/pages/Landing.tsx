@@ -129,8 +129,8 @@ export default function Landing() {
                   {...fadeIn(i * 0.05)}
                   className={`group relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1 ${
                     isContext
-                      ? "border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent hover:border-primary/40 hover:shadow-[0_18px_44px_-18px_hsl(178_66%_26%/0.35)]"
-                      : "border-border bg-card hover:border-primary/40 hover:shadow-[0_14px_40px_-16px_rgba(15,118,107,0.25)]"
+                      ? "border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent hover:border-primary/40 hover:shadow-[0_18px_44px_-18px_hsl(189_66%_26%/0.35)]"
+                      : "border-border bg-card hover:border-primary/40 hover:shadow-[0_14px_40px_-16px_rgba(23,97,110,0.25)]"
                   }`}
                 >
                   <div
@@ -187,7 +187,7 @@ export default function Landing() {
                 {...fadeIn(i * 0.07)}
                 className="group relative overflow-hidden rounded-2xl border border-border bg-card/80 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-600 text-sm font-bold text-primary-foreground shadow-[0_6px_16px_-4px_hsl(178_66%_26%/0.5)]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-600 text-sm font-bold text-primary-foreground shadow-[0_6px_16px_-4px_hsl(189_66%_26%/0.5)]">
                   {i + 1}
                 </div>
                 <s.icon className="mt-4 h-5 w-5 text-primary" strokeWidth={1.6} aria-hidden />
@@ -209,7 +209,7 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={begin}
-              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_12px_28px_-10px_hsl(178_66%_26%/0.55)] transition hover:-translate-y-0.5 hover:bg-primary-600"
+              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_12px_28px_-10px_hsl(189_66%_26%/0.55)] transition hover:-translate-y-0.5 hover:bg-primary-600"
             >
               {user ? "Open your workspace" : "Sign in to begin"}
             </button>
