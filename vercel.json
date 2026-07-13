@@ -5,6 +5,6 @@
   ],
   "functions": {
     "api/admin/reports/generate.ts": { "maxDuration": 60 },
-    "api/admin/reports/[id]/approve.ts": { "maxDuration": 60 }
+    "api/admin/reports/[id].ts": { "maxDuration": 60 }
   }
 }
