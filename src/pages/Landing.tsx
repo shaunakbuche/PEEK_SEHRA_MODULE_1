@@ -79,7 +79,7 @@ export default function Landing() {
       </section>
 
       {/* why it matters + stats */}
-      <section className="relative border-t border-border">
+      <section className="relative border-t border-border pb-20">
         <motion.div {...fadeIn()} className="mx-auto max-w-3xl px-6 pt-20 text-center">
           <p className="font-serif text-2xl leading-snug text-foreground sm:text-[1.7rem]">
             Most children who cannot see clearly at school are never picked up. Before anyone commits to
@@ -88,20 +88,22 @@ export default function Landing() {
           </p>
         </motion.div>
 
-        <motion.div {...fadeIn(0.1)} className="mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border px-6 pb-20 sm:px-0 md:grid-cols-4">
-          {STATS.map((s, i) => (
-            <div key={i} className="bg-background px-5 py-8 text-center">
-              <div className="font-serif text-4xl text-primary sm:text-5xl">
-                <CountUp value={s.value} suffix={s.suffix} />
+        <motion.div {...fadeIn(0.1)} className="mx-auto mt-16 max-w-5xl px-6 sm:px-6 lg:px-0">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-4">
+            {STATS.map((s, i) => (
+              <div key={i} className="bg-background px-5 py-8 text-center">
+                <div className="font-serif text-4xl text-primary sm:text-5xl">
+                  <CountUp value={s.value} suffix={s.suffix} />
+                </div>
+                <p className="mx-auto mt-2 max-w-[14ch] text-[0.8rem] leading-snug text-muted-foreground">{s.label}</p>
               </div>
-              <p className="mx-auto mt-2 max-w-[14ch] text-[0.8rem] leading-snug text-muted-foreground">{s.label}</p>
+            ))}
+            <div className="flex flex-col items-center justify-center gap-2 bg-background px-5 py-8 text-center">
+              <Users className="h-6 w-6 text-primary" strokeWidth={1.6} aria-hidden />
+              <p className="mx-auto max-w-[16ch] text-[0.8rem] leading-snug text-muted-foreground">
+                One login, shared across any number of devices and people
+              </p>
             </div>
-          ))}
-          <div className="flex flex-col items-center justify-center gap-2 bg-background px-5 py-8 text-center">
-            <Users className="h-6 w-6 text-primary" strokeWidth={1.6} aria-hidden />
-            <p className="mx-auto max-w-[16ch] text-[0.8rem] leading-snug text-muted-foreground">
-              One login, shared across any number of devices and people
-            </p>
           </div>
         </motion.div>
       </section>
