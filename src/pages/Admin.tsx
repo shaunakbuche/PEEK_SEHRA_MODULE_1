@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Archive, ArrowLeft, CheckCircle2, Download, Eye, Loader2, Plus, RefreshCw,
-  Search, Sparkles, Trash2, Undo2, X,
+  Archive, ArrowLeft, CheckCircle2, ClipboardList, Download, Eye, Loader2, MessageCircle, Plus, RefreshCw,
+  Search, Send, Sparkles, Trash2, Undo2, X,
 } from "lucide-react";
 import { api, type AssessmentPayload, type AssessmentStatus, type OrgRow } from "@/lib/api";
 import type { ReportContent } from "@/lib/reportTypes";
@@ -10,6 +10,7 @@ import { ASSESS, SCALE_KEY, type Question } from "@/data/sehra";
 import { TopBar, StatusPill, STATUS_META } from "@/components/brand";
 import { ReportView } from "@/components/ReportView";
 import { Dialog } from "@/components/Dialog";
+import { MessageThread } from "@/components/MessageThread";
 import { useToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -474,8 +475,8 @@ function DeleteOrgModal({ org, open, onClose, onConfirm, busy }: {
 function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void; onChanged: () => void }) {
   const toast = useToast();
   const [payload, setPayload] = useState<AssessmentPayload | null>(null);
-  const [tab, setTab] = useState<"answers" | "report">("answers");
-  const [genBusy, setGenBusy] = useState(false);
+  const [tab, setTab] = useState<"answers" | "report" | "messages">("answers");
+  const [genBusy, setGenBusy] = useState<"" | "ai" | "template">("");
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [archiveBusy, setArchiveBusy] = useState(false);
@@ -497,16 +498,21 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
 
   useEffect(() => { load(); }, [load]);
 
-  const generate = async () => {
+  const generate = async (mode: "ai" | "template") => {
     if (!payload) return;
-    setGenBusy(true); setError("");
+    setGenBusy(mode); setError("");
     try {
-      await api.post("/api/admin/reports/generate", { assessmentId: payload.assessment.id });
+      await api.post("/api/admin/reports/generate", { assessmentId: payload.assessment.id, mode });
       await load();
       setTab("report");
       onChanged();
-      toast.push("success", "Report drafted. Review and edit before publishing.");
-    } catch (e: any) { setError(e.message); toast.push("error", e.message); } finally { setGenBusy(false); }
+      toast.push(
+        "success",
+        mode === "ai"
+          ? "Report drafted with AI. Review and edit before publishing."
+          : "Report assembled from the school's answers. Review and edit before publishing."
+      );
+    } catch (e: any) { setError(e.message); toast.push("error", e.message); } finally { setGenBusy(""); }
   };
 
   const returnToSchool = async (note: string) => {
@@ -596,13 +602,15 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
       {payload && a && (
         <>
           <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border">
-            {(["answers", "report"] as const).map((t) => (
+            {(["answers", "report", "messages"] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={cn(
-                  "-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition",
+                  "-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold transition",
                   tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
                 )}>
-                {t === "answers" ? "Assessment answers" : "Report"}
+                {t === "answers" ? "Assessment answers" : t === "report" ? "Report" : (
+                  <><MessageCircle className="h-3.5 w-3.5" /> Messages</>
+                )}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 pb-2">
@@ -613,11 +621,18 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
                 </button>
               )}
               {a.status !== "draft" && (
-                <button onClick={generate} disabled={genBusy}
-                  className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60">
-                  {genBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  {payload.report ? "Regenerate with AI" : "Generate report with AI"}
-                </button>
+                <>
+                  <button onClick={() => generate("template")} disabled={!!genBusy}
+                    className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50">
+                    {genBusy === "template" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="h-3.5 w-3.5" />}
+                    {payload.report ? "Rebuild from answers" : "Generate from answers"}
+                  </button>
+                  <button onClick={() => generate("ai")} disabled={!!genBusy}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60">
+                    {genBusy === "ai" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {payload.report ? "Regenerate with AI" : "Generate with AI"}
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -663,6 +678,12 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
                 </p>
               </div>
             )
+          )}
+
+          {tab === "messages" && (
+            <div className="h-[480px] rounded-xl border border-border p-4">
+              <MessageThread orgId={org.id} viewerRole="admin" emptyText="No messages from this school yet." />
+            </div>
           )}
         </>
       )}
@@ -854,7 +875,14 @@ export default function Admin() {
                       <tr key={o.id} className="group cursor-pointer border-b border-border/60 transition last:border-0 hover:bg-secondary/30"
                         onClick={() => setSelected(o)}>
                         <td className="px-5 py-4">
-                          <div className="font-medium">{o.name}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{o.name}</span>
+                            {o.messageCount > 0 && (
+                              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[0.68rem] font-bold text-primary">
+                                <MessageCircle className="h-3 w-3" /> {o.messageCount}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-muted-foreground">{o.schoolEmail}</div>
                         </td>
                         <td className="hidden px-5 py-4 text-muted-foreground md:table-cell">
@@ -880,7 +908,14 @@ export default function Admin() {
                     key={o.id} onClick={() => setSelected(o)}
                     className="block w-full rounded-xl border border-border bg-card p-4 text-left transition active:bg-secondary/40"
                   >
-                    <div className="font-medium">{o.name}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{o.name}</span>
+                      {o.messageCount > 0 && (
+                        <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[0.68rem] font-bold text-primary">
+                          <MessageCircle className="h-3 w-3" /> {o.messageCount}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">{o.schoolEmail}</div>
                     {(o.country || o.region) && (
                       <div className="mt-0.5 text-xs text-muted-foreground">{[o.country, o.region].filter(Boolean).join(" · ")}</div>

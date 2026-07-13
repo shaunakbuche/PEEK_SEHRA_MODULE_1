@@ -104,6 +104,14 @@ CREATE TABLE IF NOT EXISTS report_edits (
   diff jsonb NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  sender_role text NOT NULL CHECK (sender_role IN ('school','admin')),
+  body text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS messages_org_idx ON messages(org_id, created_at);
 `;
 
 export async function ensureSchema() {

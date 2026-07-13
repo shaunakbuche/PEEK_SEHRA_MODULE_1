@@ -21,11 +21,16 @@ export default route({
               u.email AS school_email,
               a.id AS assessment_id, a.status AS assessment_status,
               a.submitted_at, a.updated_at,
-              r.id AS report_id, r.status AS report_status
+              r.id AS report_id, r.status AS report_status,
+              m.message_count
        FROM organizations o
        LEFT JOIN users u ON u.org_id = o.id AND u.role = 'school'
        LEFT JOIN assessments a ON a.org_id = o.id
        LEFT JOIN reports r ON r.assessment_id = a.id
+       LEFT JOIN (
+         SELECT org_id, COUNT(*) FILTER (WHERE sender_role = 'school') AS message_count
+         FROM messages GROUP BY org_id
+       ) m ON m.org_id = o.id
        ORDER BY o.created_at DESC`
     );
     res.status(200).json({
@@ -42,6 +47,7 @@ export default route({
         updatedAt: r.updated_at,
         reportId: r.report_id,
         reportStatus: r.report_status,
+        messageCount: Number(r.message_count) || 0,
       })),
     });
   },

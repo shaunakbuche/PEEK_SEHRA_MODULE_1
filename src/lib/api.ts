@@ -80,4 +80,12 @@ export interface OrgRow {
   updatedAt: string | null;
   reportId: string | null;
   reportStatus: "generated" | "edited" | "approved" | null;
+  messageCount: number;
+}
+
+export interface Message {
+  id: string;
+  senderRole: "school" | "admin";
+  body: string;
+  createdAt: string;
 }

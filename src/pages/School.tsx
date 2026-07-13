@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Download, FileText, Printer, Send } from "lucide-react";
+import { CheckCircle2, Clock, Download, FileText, MessageCircle, Printer, Send } from "lucide-react";
 import { api, type AssessmentPayload } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { hydrate, enableServerSync, disableServerSync, flushNow, completionPct, useStoreVersion, getAll } from "@/lib/store";
@@ -8,6 +8,7 @@ import { TopBar, SaveBadge, StatusPill, ProgressRing } from "@/components/brand"
 import { AssessmentWorkspace, type Section } from "@/components/AssessmentWorkspace";
 import { ReportView } from "@/components/ReportView";
 import { Dialog } from "@/components/Dialog";
+import { MessageThread } from "@/components/MessageThread";
 import { relativeTime } from "@/lib/utils";
 
 type Payload = AssessmentPayload;
@@ -109,6 +110,7 @@ export default function School() {
   const [section, setSection] = useState<Section>("context");
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -159,7 +161,25 @@ export default function School() {
       <TopBar context={user?.org?.name || "School"}>
         {editable && <SaveBadge />}
         {a && <StatusPill status={a.status} />}
+        <button
+          onClick={() => setMessagesOpen(true)}
+          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
+        >
+          <MessageCircle className="h-3.5 w-3.5" /> Ask Peek
+        </button>
       </TopBar>
+
+      <Dialog open={messagesOpen} onClose={() => setMessagesOpen(false)} labelledBy="messages-title" maxWidth="max-w-lg">
+        <div className="mb-3">
+          <h3 id="messages-title" className="text-xl">Questions for Peek</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ask about the assessment, the module, or anything you are unsure how to answer.
+          </p>
+        </div>
+        <div className="h-[420px]">
+          <MessageThread viewerRole="school" emptyText="No messages yet. Ask Peek anything about the assessment." />
+        </div>
+      </Dialog>
 
       {error && (
         <div role="alert" className="mx-auto mt-6 max-w-3xl rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
