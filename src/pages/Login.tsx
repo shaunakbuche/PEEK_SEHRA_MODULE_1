@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Layers, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Wordmark } from "@/components/brand";
 import { IrisOrb } from "@/components/IrisOrb";
-
-const SIDE_BADGES = [
-  { icon: Layers, label: "Shared across every device", className: "-left-2 top-6 lg:-left-10", delay: 0.5 },
-  { icon: Sparkles, label: "AI-drafted, Peek-approved", className: "-right-2 top-24 lg:-right-14", delay: 0.8 },
-  { icon: ShieldCheck, label: "One private login per school", className: "bottom-0 left-6", delay: 1.1 },
-];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -116,33 +110,10 @@ export default function Login() {
           backgroundSize: "26px 26px",
         }} />
         <div className="relative z-10 max-w-md px-12 text-center">
-          <div className="relative mx-auto h-[300px] w-[300px]">
-            <IrisOrb className="h-full w-full" />
-            {SIDE_BADGES.map((b, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10, scale: 0.94 }}
-                animate={{ opacity: 1, y: [0, -7, 0], scale: 1 }}
-                transition={{
-                  opacity: { duration: 0.6, delay: b.delay },
-                  scale: { duration: 0.6, delay: b.delay },
-                  y: { duration: 5 + b.delay, repeat: Infinity, ease: "easeInOut", delay: b.delay },
-                }}
-                className={`absolute flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-medium text-white shadow-lg backdrop-blur-md ${b.className}`}
-              >
-                <b.icon className="h-3.5 w-3.5 text-primary-50" aria-hidden />
-                {b.label}
-              </motion.div>
-            ))}
-          </div>
-          <motion.blockquote
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="mt-6 font-serif text-2xl leading-snug text-white"
-          >
+          <IrisOrb className="mx-auto h-[300px] w-[300px]" />
+          <blockquote className="mt-6 text-2xl font-semibold leading-snug text-white">
             See whether a school eye health programme can work here.
-          </motion.blockquote>
+          </blockquote>
           <p className="mt-4 text-sm text-white/60">
             SEHRA Scoping Module · the Minto Method
           </p>

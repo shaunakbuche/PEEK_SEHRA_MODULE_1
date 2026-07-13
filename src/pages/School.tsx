@@ -48,34 +48,31 @@ function WelcomeHeader({ orgName, updatedAt }: { orgName?: string; updatedAt?: s
   const pct = completionPct();
   const lastSaved = relativeTime(updatedAt);
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] backdrop-blur-sm">
-      <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary/[0.07] blur-3xl" />
-      <div className="relative flex flex-wrap items-center gap-6">
-        <ProgressRing pct={pct} size={84} />
-        <div className="min-w-[240px] flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">SEHRA · Module 1</p>
-            {lastSaved && (
-              <span className="flex items-center gap-1.5 text-[0.72rem] text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/60" /> Last updated {lastSaved}
-              </span>
-            )}
-          </div>
-          <h1 className="mt-1 font-serif text-3xl sm:text-4xl">
-            {pct === 0 ? "Welcome" : "Welcome back"}{orgName ? `, ${orgName}` : ""}
-          </h1>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            {pct === 0
-              ? "Work through each area at your own pace, in any order. Most teams finish within a working week."
-              : pct < 100
-                ? "Pick up where you left off. Anyone signed in with this login sees the same progress, on any device."
-                : "Every question has a response. Review the summary and submit when you are ready."}
-          </p>
-          <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.8rem] text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Saves automatically</span>
-            <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Shared across devices</span>
-            <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Complete in any order</span>
-          </div>
+    <div className="flex flex-wrap items-center gap-6 rounded-xl border border-border bg-card p-6">
+      <ProgressRing pct={pct} size={84} />
+      <div className="min-w-[240px] flex-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">SEHRA · Module 1</p>
+          {lastSaved && (
+            <span className="flex items-center gap-1.5 text-[0.72rem] text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/60" /> Last updated {lastSaved}
+            </span>
+          )}
+        </div>
+        <h1 className="mt-1 text-3xl sm:text-4xl">
+          {pct === 0 ? "Welcome" : "Welcome back"}{orgName ? `, ${orgName}` : ""}
+        </h1>
+        <p className="mt-2 max-w-xl text-muted-foreground">
+          {pct === 0
+            ? "Work through each area at your own pace, in any order. Most teams finish within a working week."
+            : pct < 100
+              ? "Pick up where you left off. Anyone signed in with this login sees the same progress, on any device."
+              : "Every question has a response. Review the summary and submit when you are ready."}
+        </p>
+        <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Saves automatically</span>
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Shared across devices</span>
+          <span className="flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Complete in any order</span>
         </div>
       </div>
     </div>
