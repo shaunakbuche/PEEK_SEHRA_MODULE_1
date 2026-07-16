@@ -308,7 +308,7 @@ function ReflectionsQ({ q }: { q: Extract<Question, { type: "reflections" }> }) 
   );
 }
 
-function renderQuestion(q: Question, key: number) {
+export function renderQuestion(q: Question, key: number) {
   switch (q.type) {
     case "yn": return <YN key={key} q={q} />;
     case "text": return <TextQ key={key} q={q} />;

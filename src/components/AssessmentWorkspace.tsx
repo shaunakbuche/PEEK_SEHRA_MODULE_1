@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { ComponentView } from "@/components/assessment/ComponentView";
+import { IncompleteView } from "@/components/assessment/IncompleteView";
+import { DocumentImport } from "@/components/assessment/DocumentImport";
 import { SummaryView } from "@/components/SummaryView";
 import { ASSESS } from "@/data/sehra";
-import { useField, setField, useStoreVersion, completionPct, componentDone } from "@/lib/store";
+import { useField, setField, useStoreVersion, completionPct, componentDone, unansweredCount } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const SECTIONS = ["context", "c1", "c2", "c3", "c4", "c5", "summary"] as const;
@@ -52,13 +55,17 @@ export function AssessmentWorkspace({
   onSubmit: () => void;
 }) {
   useStoreVersion();
+  const [mode, setMode] = useState<"all" | "incomplete">("all");
+  const [importOpen, setImportOpen] = useState(false);
   const pct = completionPct();
+  const unanswered = unansweredCount();
   const idx = SECTIONS.indexOf(section);
   const prev = SECTIONS[idx - 1];
   const next = SECTIONS[idx + 1];
   const comp = ASSESS.find((c) => c.id === section);
 
   const go = (s: Section) => {
+    setMode("all");
     setSection(s);
     document.getElementById("assessment")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -72,7 +79,7 @@ export function AssessmentWorkspace({
             {SECTIONS.map((s, i) => {
               const c = ASSESS.find((x) => x.id === s);
               const done = s !== "summary" && c ? componentDone(c) : false;
-              const active = section === s;
+              const active = mode === "all" && section === s;
               return (
                 <button
                   key={s}
@@ -109,15 +116,57 @@ export function AssessmentWorkspace({
         </div>
       </div>
 
+      {/* toolbar: view mode + document import */}
+      <div className="mx-auto max-w-3xl px-6 pt-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex rounded-lg border border-border bg-card p-0.5 text-sm font-medium">
+            <button
+              onClick={() => setMode("all")}
+              className={cn(
+                "rounded-md px-3 py-1.5 transition",
+                mode === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Full assessment
+            </button>
+            <button
+              onClick={() => setMode("incomplete")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 transition",
+                mode === "incomplete" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Unanswered only
+              {unanswered > 0 && (
+                <span className={cn(
+                  "rounded-full px-1.5 py-0.5 text-[0.65rem] tabular-nums",
+                  mode === "incomplete" ? "bg-primary-foreground/20" : "bg-secondary text-muted-foreground"
+                )}>
+                  {unanswered}
+                </span>
+              )}
+            </button>
+          </div>
+          <button
+            onClick={() => setImportOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+          >
+            <Sparkles className="h-4 w-4" /> Fill in from a document
+          </button>
+        </div>
+      </div>
+
       {/* active section */}
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mx-auto max-w-3xl px-6 pb-12 pt-6">
         <motion.div
-          key={section}
+          key={mode === "incomplete" ? "incomplete" : section}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {section === "summary" ? (
+          {mode === "incomplete" ? (
+            <IncompleteView onGoToSummary={() => go("summary")} />
+          ) : section === "summary" ? (
             <SummaryView onSubmit={onSubmit} />
           ) : comp ? (
             <>
@@ -133,6 +182,12 @@ export function AssessmentWorkspace({
           ) : null}
         </motion.div>
       </div>
+
+      <DocumentImport
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onApplied={() => setMode("incomplete")}
+      />
     </section>
   );
 }

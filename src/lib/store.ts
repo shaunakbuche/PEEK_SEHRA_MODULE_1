@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { ASSESS, keysForQuestions, type Component } from "@/data/sehra";
+import { ASSESS, keysForQuestions, type Component, type Question } from "@/data/sehra";
 import { api } from "./api";
 
 /**
@@ -124,6 +124,27 @@ export function completionPct(): number {
     done += keys.filter(filled).length;
   });
   return total ? Math.round((done / total) * 100) : 0;
+}
+
+/** A question counts as answered once any of its fields has a value. */
+export function questionAnswered(q: Question): boolean {
+  const keys = keysForQuestions([q]);
+  if (!keys.length) return true; // notes and other non-input blocks
+  return keys.some(filled);
+}
+
+/** Total number of unanswered questions across the whole assessment. */
+export function unansweredCount(): number {
+  let n = 0;
+  ASSESS.forEach((c) =>
+    c.subsections.forEach((s) =>
+      s.questions.forEach((qq) => {
+        if (qq.type === "note") return;
+        if (!questionAnswered(qq)) n++;
+      })
+    )
+  );
+  return n;
 }
 
 export function subStatus(questions: { length: number } & any) {

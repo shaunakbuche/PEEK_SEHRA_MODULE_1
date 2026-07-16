@@ -89,3 +89,16 @@ export interface Message {
   body: string;
   createdAt: string;
 }
+
+/** A single answer the document scanner proposes filling in. */
+export interface ExtractSuggestion {
+  key: string;
+  value: string;
+  label: string;
+  section: string;
+}
+
+export interface ExtractResponse {
+  suggestions: ExtractSuggestion[];
+  model: string;
+}
