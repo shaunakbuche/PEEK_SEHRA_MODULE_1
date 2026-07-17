@@ -11,7 +11,17 @@ module.exports = {
       screens: { "2xl": "1400px" },
     },
     extend: {
+      fontFamily: {
+        sans: ["'Public Sans'", "system-ui", "sans-serif"],
+        serif: ["'Domine'", "Georgia", "serif"],
+      },
       colors: {
+        brand: {
+          teal: "hsl(var(--brand-teal))",
+          green: "hsl(var(--brand-green))",
+          charcoal: "hsl(var(--brand-charcoal))",
+          yellow: "hsl(var(--brand-yellow))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

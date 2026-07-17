@@ -104,7 +104,7 @@ export default function Login() {
       </div>
 
       {/* visual side */}
-      <div className="relative hidden items-center justify-center overflow-hidden bg-[radial-gradient(120%_120%_at_20%_10%,#0d5f57_0%,#06403b_55%,#032a27_100%)] lg:flex">
+      <div className="relative hidden items-center justify-center overflow-hidden bg-[radial-gradient(120%_120%_at_20%_10%,#194E55_0%,#0c3a3f_55%,#002730_100%)] lg:flex">
         <div className="absolute inset-0 opacity-[0.07]" style={{
           backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
           backgroundSize: "26px 26px",

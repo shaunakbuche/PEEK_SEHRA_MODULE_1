@@ -4,9 +4,10 @@ import {
 } from "docx";
 import type { ReportContent } from "../../src/lib/reportTypes.js";
 
-const TEAL = "17616E";
-const TEAL_DARK = "11545F";
-const TEAL_LIGHT = "F0F8F9";
+// Peek brand palette (Visual Identity Guidelines, March 2023).
+const TEAL = "194E55"; // Grey Green
+const TEAL_DARK = "002730"; // Charcoal Black
+const TEAL_LIGHT = "EAF6F5"; // light Teal tint
 
 const INDICATOR_FILLS: Record<string, string> = {
   "Low Potential": "F8DDD6",
@@ -64,16 +65,16 @@ export async function renderReportDocx(content: ReportContent, meta: { org: stri
 
   const doc = new Document({
     styles: {
-      default: { document: { run: { font: "Arial", size: 22 } } },
+      default: { document: { run: { font: "Public Sans", size: 22 } } },
       paragraphStyles: [
         { id: "Title", name: "Title", basedOn: "Normal", next: "Normal",
-          run: { size: 52, bold: true, font: "Arial", color: TEAL_DARK },
+          run: { size: 52, bold: true, font: "Domine", color: TEAL_DARK },
           paragraph: { spacing: { before: 0, after: 200 } } },
         { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
-          run: { size: 30, bold: true, font: "Arial", color: TEAL_DARK },
+          run: { size: 30, bold: true, font: "Public Sans", color: TEAL_DARK },
           paragraph: { spacing: { before: 320, after: 160 }, outlineLevel: 0 } },
         { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
-          run: { size: 25, bold: true, font: "Arial", color: TEAL },
+          run: { size: 25, bold: true, font: "Public Sans", color: TEAL },
           paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 1 } },
       ],
     },

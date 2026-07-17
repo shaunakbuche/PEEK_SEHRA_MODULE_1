@@ -56,7 +56,7 @@ export function IrisOrb({ className }: { className?: string }) {
           width: "72%",
           height: "72%",
           background:
-            "radial-gradient(circle, rgba(15,118,107,0.18) 0%, rgba(15,118,107,0.06) 45%, transparent 70%)",
+            "radial-gradient(circle, rgba(131,202,198,0.30) 0%, rgba(131,202,198,0.10) 45%, transparent 70%)",
         }}
         animate={{ scale: [1, 1.06, 1], opacity: [0.55, 0.8, 0.55] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
@@ -72,7 +72,7 @@ export function IrisOrb({ className }: { className?: string }) {
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 50% 50%, #0a3b38 0%, #06292a 55%, #041d1f 100%)",
+              "radial-gradient(circle at 50% 50%, #194E55 0%, #0c3a40 55%, #002730 100%)",
             boxShadow:
               "0 30px 80px -20px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.6)",
           }}
@@ -91,7 +91,7 @@ export function IrisOrb({ className }: { className?: string }) {
             className="absolute inset-0 rounded-full"
             style={{
               background:
-                "radial-gradient(circle at 50% 50%, #7df0dd 0%, #16c2ad 26%, #0a8f86 52%, #064f4c 80%, #042e2c 100%)",
+                "radial-gradient(circle at 50% 50%, #c7ebe8 0%, #83CAC6 26%, #3f8f8a 52%, #194E55 80%, #002730 100%)",
               boxShadow: "inset 0 0 40px rgba(0,0,0,0.55)",
             }}
           />
@@ -124,7 +124,7 @@ export function IrisOrb({ className }: { className?: string }) {
               className="h-full w-full rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 45%, #0a1413 0%, #000 70%)",
+                  "radial-gradient(circle at 50% 45%, #002730 0%, #000 70%)",
                 boxShadow:
                   "0 0 22px rgba(0,0,0,0.9), inset 0 0 12px rgba(0,0,0,0.9)",
               }}
@@ -161,7 +161,7 @@ export function IrisOrb({ className }: { className?: string }) {
             y: glareY,
             z: 60,
             background:
-              "radial-gradient(circle, rgba(125,240,221,0.9) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(131,202,198,0.9) 0%, transparent 70%)",
           }}
         />
       </motion.div>
