@@ -179,6 +179,96 @@ function ReadonlyAnswers({ answers }: { answers: Record<string, string> }) {
   );
 }
 
+/* Read-only view of the whole questionnaire as schools see it, so Peek staff
+   and reviewers can inspect the questions without needing a school login or
+   any submitted answers. */
+function PreviewQuestion({ q }: { q: Question }) {
+  if (q.type === "note") return <p className="text-[0.82rem] italic text-muted-foreground">{q.text}</p>;
+  if (q.type === "reflections")
+    return (
+      <div>
+        <div className="text-[0.85rem] font-medium text-foreground">Reflections and implications</div>
+        <div className="mt-0.5 text-[0.78rem] text-muted-foreground">Up to three challenges and three supporting factors, plus an overall readiness rating.</div>
+      </div>
+    );
+
+  const showLines = (q.type === "yn" || q.type === "group") && q.lines;
+  return (
+    <div>
+      <div className="text-[0.85rem] font-medium text-foreground">{q.text}</div>
+      {q.help && <div className="mt-0.5 text-[0.75rem] text-muted-foreground/80">{q.help}</div>}
+      {q.type === "yn" && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {["Yes", "No", ...(q.thirdOption ? [q.thirdOption] : []), ...(q.noOption ? [q.noOption] : [])].map((l) => (
+            <span key={l} className="rounded-md border border-border px-2 py-0.5 text-[0.72rem] text-muted-foreground">{l}</span>
+          ))}
+        </div>
+      )}
+      {(q.type === "text" || q.type === "field") && (
+        <div className="mt-1 text-[0.74rem] italic text-muted-foreground/60">Free-text answer</div>
+      )}
+      {q.type === "group" && (
+        <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-[0.8rem] text-muted-foreground">
+          {q.items.map((it, i) => <li key={i}>{it} <span className="text-muted-foreground/50">(Yes / No)</span></li>)}
+        </ul>
+      )}
+      {q.type === "table" && (
+        <div className="mt-2 overflow-x-auto">
+          <table className="border-collapse text-[0.72rem] text-muted-foreground">
+            <thead>
+              <tr>
+                <th className="border border-border bg-secondary/40 px-2 py-1" />
+                {q.cols.map((c, i) => <th key={i} className="border border-border bg-secondary/40 px-2 py-1 text-left font-semibold">{c}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {q.rows.map((r, ri) => (
+                <tr key={ri}>
+                  <th className="border border-border bg-secondary/20 px-2 py-1 text-left font-medium">{r}</th>
+                  {q.cols.map((_, ci) => <td key={ci} className="border border-border px-2 py-1 text-center text-muted-foreground/40">—</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {showLines && (
+        <ul className="mt-1.5 space-y-0.5 border-l-2 border-primary/25 pl-3 text-[0.75rem] text-muted-foreground">
+          {q.lines!.map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function QuestionnairePreview() {
+  return (
+    <div className="space-y-8">
+      <p className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+        The full SEHRA Module 1 questionnaire exactly as schools see it, shown read-only for review. This is the question set itself, not any school's answers.
+      </p>
+      {ASSESS.map((comp) => (
+        <section key={comp.id}>
+          <div className="mb-3">
+            <h4 className="font-serif text-lg">
+              {comp.id === "context" ? "Context" : `Component ${comp.number} · ${comp.title}`}
+            </h4>
+            <p className="mt-0.5 text-[0.8rem] text-muted-foreground">{comp.purpose}</p>
+          </div>
+          {comp.subsections.map((sub) => (
+            <div key={sub.id} className="mb-4 rounded-lg border border-border bg-card p-4">
+              <div className="mb-3 text-[0.72rem] font-bold uppercase tracking-wide text-muted-foreground">{sub.id} {sub.title}</div>
+              <div className="space-y-4">
+                {sub.questions.map((q, i) => <PreviewQuestion key={i} q={q} />)}
+              </div>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Return to school                                                     */
 /* ------------------------------------------------------------------ */
@@ -475,7 +565,7 @@ function DeleteOrgModal({ org, open, onClose, onConfirm, busy }: {
 function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void; onChanged: () => void }) {
   const toast = useToast();
   const [payload, setPayload] = useState<AssessmentPayload | null>(null);
-  const [tab, setTab] = useState<"answers" | "report" | "messages">("answers");
+  const [tab, setTab] = useState<"answers" | "questionnaire" | "report" | "messages">("answers");
   const [genBusy, setGenBusy] = useState<"" | "ai" | "template">("");
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
@@ -602,15 +692,16 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
       {payload && a && (
         <>
           <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border">
-            {(["answers", "report", "messages"] as const).map((t) => (
+            {(["answers", "questionnaire", "report", "messages"] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={cn(
                   "-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold transition",
                   tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
                 )}>
-                {t === "answers" ? "Assessment answers" : t === "report" ? "Report" : (
-                  <><MessageCircle className="h-3.5 w-3.5" /> Messages</>
-                )}
+                {t === "answers" ? "Assessment answers"
+                  : t === "questionnaire" ? (<><Eye className="h-3.5 w-3.5" /> Questionnaire</>)
+                  : t === "report" ? "Report"
+                  : (<><MessageCircle className="h-3.5 w-3.5" /> Messages</>)}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 pb-2">
@@ -639,9 +730,21 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
 
           {tab === "answers" && (
             a.status === "draft" && answered === 0
-              ? <p className="py-16 text-center text-muted-foreground">The school has not started yet.</p>
+              ? (
+                <div className="py-16 text-center">
+                  <p className="text-muted-foreground">The school has not started filling this in yet.</p>
+                  <button
+                    onClick={() => setTab("questionnaire")}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary"
+                  >
+                    <Eye className="h-4 w-4" /> Preview the questionnaire
+                  </button>
+                </div>
+              )
               : <ReadonlyAnswers answers={a.answers} />
           )}
+
+          {tab === "questionnaire" && <QuestionnairePreview />}
 
           {tab === "report" && (
             payload.report ? (
