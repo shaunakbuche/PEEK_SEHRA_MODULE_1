@@ -5,7 +5,7 @@ import { requireAuth } from "../../_lib/auth.js";
 import { q, qOne } from "../../_lib/db.js";
 import { renderReportPdf } from "../../_lib/pdf.js";
 import { renderReportDocx } from "../../_lib/docxGen.js";
-import { ReportContentSchema } from "../../../src/lib/reportTypes.js";
+import { ReportContentSchema, normalizeReportContent } from "../../../src/lib/reportTypes.js";
 
 const PutBody = z.object({ content: ReportContentSchema });
 
@@ -84,7 +84,7 @@ export default route({
     );
     if (!row) throw new ApiError(404, "Report not found");
 
-    const content = ReportContentSchema.parse(row.content);
+    const content = ReportContentSchema.parse(normalizeReportContent(row.content));
     const meta = { org: row.org_name, country: row.org_country };
 
     const [pdfBuf, docxBuf] = await Promise.all([

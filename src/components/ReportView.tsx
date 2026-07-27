@@ -1,22 +1,23 @@
-import type { ReportContent } from "@/lib/reportTypes";
+import type { ReportContent, ThemeGroup } from "@/lib/reportTypes";
+import { RAG_LEGEND, toRag, normalizeReportContent } from "@/lib/reportTypes";
 import { cn } from "@/lib/utils";
 
-const INDICATOR_STYLE: Record<string, string> = {
-  "Low Potential": "bg-[#d8593f]",
-  "Some Possibilities": "bg-[#e6a23c]",
-  "Good Possibilities": "bg-[#4fb07f]",
-  "High Potential": "bg-[#0aa18f]",
+const RAG_COLOR: Record<string, string> = {
+  Green: "#2e7d5b",
+  "Amber/Green": "#6ba368",
+  Amber: "#d99a2b",
+  "Red/Amber": "#d9722b",
+  Red: "#c0392b",
 };
 
-function Chip({ level }: { level: string }) {
+function RagBadge({ level }: { level: string }) {
+  const l = toRag(level);
   return (
     <span
-      className={cn(
-        "inline-block rounded-full px-3 py-1 text-[0.72rem] font-bold text-white",
-        INDICATOR_STYLE[level] || "bg-primary"
-      )}
+      className="inline-block rounded-full px-3 py-1 text-[0.72rem] font-bold text-white"
+      style={{ backgroundColor: RAG_COLOR[l] }}
     >
-      {level || "Not set"}
+      {l}
     </span>
   );
 }
@@ -25,91 +26,141 @@ function H({ children }: { children: React.ReactNode }) {
   return <h3 className="mb-3 mt-10 font-serif text-2xl text-foreground first:mt-0">{children}</h3>;
 }
 
-/** On-screen rendering of a SEHRA report, shared by the admin preview and the school's final view. */
-export function ReportView({ content, compact }: { content: ReportContent; compact?: boolean }) {
+function Para({ children }: { children: React.ReactNode }) {
+  return <p className="whitespace-pre-wrap text-muted-foreground">{children}</p>;
+}
+
+/** Enablers / barriers / action points, grouped under their themes. */
+function ThemeGroups({ groups, tone }: { groups: ThemeGroup[]; tone: "enabler" | "barrier" | "action" }) {
+  if (!groups.length) return null;
+  const label = tone === "enabler" ? "Enablers" : tone === "barrier" ? "Barriers" : "Action points";
+  const accent = tone === "barrier" ? "text-[#c0392b]" : tone === "action" ? "text-foreground" : "text-primary";
+  return (
+    <div className="mt-4">
+      <div className={cn("mb-2 text-[0.72rem] font-bold uppercase tracking-wide", accent)}>{label}</div>
+      <div className="space-y-3">
+        {groups.map((g, i) => (
+          <div key={i}>
+            <div className="text-[0.82rem] font-semibold text-foreground">{g.theme}</div>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+              {g.points.map((p, j) => <li key={j}>{p}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** On-screen rendering of a SEHRA analysis: the themed synthesis report, then the RAG dashboard. */
+export function ReportView({ content: raw, compact }: { content: ReportContent; compact?: boolean }) {
+  const content = normalizeReportContent(raw);
   return (
     <article className={cn("text-[0.95rem] leading-relaxed text-foreground", compact && "text-sm")}>
       <header className="mb-8 border-b border-border pb-6">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">
-          SEHRA Scoping Module · Report
+          SEHRA Scoping Module · Synthesis &amp; feasibility analysis
         </p>
         <h2 className="mt-2 font-serif text-3xl leading-tight">{content.title}</h2>
       </header>
 
       <H>Executive summary</H>
-      <p className="whitespace-pre-wrap text-muted-foreground">{content.executiveSummary}</p>
+      <Para>{content.executiveSummary}</Para>
 
-      <H>Context</H>
-      <p className="whitespace-pre-wrap text-muted-foreground">{content.context}</p>
+      <H>Background and method</H>
+      <Para>{content.background}</Para>
 
-      <H>Readiness at a glance</H>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {content.components.map((c, i) => (
-          <div key={i} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
-            <span className="text-sm font-medium">C{i + 1} · {c.name}</span>
-            <Chip level={c.indicatorLevel} />
-          </div>
-        ))}
-      </div>
+      <H>Context snapshot</H>
+      <Para>{content.contextSnapshot}</Para>
 
-      <H>Component findings</H>
+      {content.dataQualityNote?.trim() && (
+        <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span className="font-semibold">Data-quality note. </span>
+          <span className="whitespace-pre-wrap">{content.dataQualityNote}</span>
+        </div>
+      )}
+
+      <H>Component-by-component analysis</H>
       <div className="space-y-8">
         {content.components.map((c, i) => (
           <section key={i}>
             <div className="mb-2 flex flex-wrap items-center gap-3">
               <h4 className="font-serif text-lg">Component {i + 1}: {c.name}</h4>
-              <Chip level={c.indicatorLevel} />
+              <RagBadge level={c.rag} />
             </div>
-            <p className="whitespace-pre-wrap text-muted-foreground">{c.findings}</p>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {c.challenges.length > 0 && (
-                <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                  <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-wide text-accent">Challenges</div>
-                  <ul className="list-disc space-y-1 pl-4 text-sm text-muted-foreground">
-                    {c.challenges.map((x, j) => <li key={j}>{x}</li>)}
-                  </ul>
-                </div>
-              )}
-              {c.supports.length > 0 && (
-                <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                  <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-wide text-primary">Supporting factors</div>
-                  <ul className="list-disc space-y-1 pl-4 text-sm text-muted-foreground">
-                    {c.supports.map((x, j) => <li key={j}>{x}</li>)}
-                  </ul>
-                </div>
-              )}
-            </div>
+            <Para>{c.summary}</Para>
+            <ThemeGroups groups={c.enablers} tone="enabler" />
+            <ThemeGroups groups={c.barriers} tone="barrier" />
+            {c.crossCutting?.trim() && (
+              <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-4">
+                <div className="mb-1 text-[0.72rem] font-bold uppercase tracking-wide text-muted-foreground">Cross-cutting summary</div>
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">{c.crossCutting}</p>
+              </div>
+            )}
+            <ThemeGroups groups={c.actionPoints} tone="action" />
           </section>
         ))}
       </div>
 
-      {content.themeAnalysis.length > 0 && (
-        <>
-          <H>Thematic analysis</H>
-          <div className="space-y-4">
-            {content.themeAnalysis.map((t, i) => (
-              <div key={i} className="border-l-[3px] border-primary pl-4">
-                <div className="font-semibold">{t.theme}</div>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{t.assessment}</p>
-                {t.evidence.map((e, j) => (
-                  <p key={j} className="mt-1 text-xs text-muted-foreground/70">Evidence: {e}</p>
-                ))}
+      <H>Overall feasibility and implications</H>
+      <div className="space-y-4">
+        {([
+          ["Feasibility considerations", content.overall.feasibility],
+          ["Programme strategy implications", content.overall.strategyImplications],
+          ["Policy advocacy priorities", content.overall.policyAdvocacy],
+          ["Recommended next steps", content.overall.nextSteps],
+        ] as const).map(([label, body]) =>
+          body?.trim() ? (
+            <div key={label} className="border-l-[3px] border-primary pl-4">
+              <div className="font-semibold">{label}</div>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{body}</p>
+            </div>
+          ) : null
+        )}
+      </div>
+
+      {/* ---- RAG feasibility dashboard ---- */}
+      <div className="mt-12 rounded-2xl border border-border bg-secondary/20 p-6">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">RAG feasibility dashboard</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+          <span className="font-serif text-lg">Overall</span>
+          <RagBadge level={content.overall.rag} />
+          <p className="w-full text-sm text-muted-foreground">{content.overall.ragInterpretation}</p>
+        </div>
+
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {content.components.map((c, i) => (
+            <div key={i} className="rounded-lg border border-border bg-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium">C{i + 1} · {c.name}</span>
+                <RagBadge level={c.rag} />
+              </div>
+              {c.ragSummary?.trim() && <p className="mt-1.5 text-[0.82rem] text-muted-foreground">{c.ragSummary}</p>}
+            </div>
+          ))}
+        </div>
+
+        {content.topActions.length > 0 && (
+          <div className="mt-5">
+            <div className="mb-2 font-serif text-lg">Top priority actions</div>
+            <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
+              {content.topActions.map((a, i) => <li key={i}>{a}</li>)}
+            </ol>
+          </div>
+        )}
+
+        <div className="mt-5">
+          <div className="mb-2 font-serif text-lg">RAG legend</div>
+          <div className="space-y-1.5">
+            {RAG_LEGEND.map((r) => (
+              <div key={r.level} className="flex items-start gap-2.5 text-[0.82rem] text-muted-foreground">
+                <span className="mt-0.5 flex-none"><RagBadge level={r.level} /></span>
+                <span>{r.description}</span>
               </div>
             ))}
           </div>
-        </>
-      )}
-
-      <H>Feasibility</H>
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-        <div className="font-serif text-xl text-primary-600">{content.feasibility.verdict}</div>
-        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{content.feasibility.rationale}</p>
+        </div>
       </div>
-
-      <H>Recommendations</H>
-      <ol className="list-decimal space-y-2 pl-5 text-muted-foreground">
-        {content.recommendations.map((r, i) => <li key={i}>{r}</li>)}
-      </ol>
     </article>
   );
 }

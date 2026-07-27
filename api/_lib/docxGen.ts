@@ -2,18 +2,21 @@ import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, LevelFormat, AlignmentType,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, Footer, PageNumber,
 } from "docx";
-import type { ReportContent } from "../../src/lib/reportTypes.js";
+import type { ReportContent, ThemeGroup } from "../../src/lib/reportTypes.js";
+import { RAG_LEGEND, toRag } from "../../src/lib/reportTypes.js";
 
 // Peek brand palette (Visual Identity Guidelines, March 2023).
 const TEAL = "194E55"; // Grey Green
 const TEAL_DARK = "002730"; // Charcoal Black
 const TEAL_LIGHT = "EAF6F5"; // light Teal tint
 
-const INDICATOR_FILLS: Record<string, string> = {
-  "Low Potential": "F8DDD6",
-  "Some Possibilities": "FAEBD4",
-  "Good Possibilities": "DCEFE4",
-  "High Potential": "D5EEEB",
+// RAG scale fills (semantic, not brand).
+const RAG_FILLS: Record<string, string> = {
+  Green: "DCEFE4",
+  "Amber/Green": "E3F0DA",
+  Amber: "FAEBD4",
+  "Red/Amber": "FADFC9",
+  Red: "F8DDD6",
 };
 
 const border = { style: BorderStyle.SINGLE, size: 1, color: "CCDDDB" };
@@ -41,6 +44,14 @@ function heading(text: string, level: (typeof HeadingLevel)[keyof typeof Heading
   return new Paragraph({ heading: level, children: [new TextRun(text)] });
 }
 
+/** Enablers / barriers / action points grouped under their themes. */
+function themeGroups(groups: ThemeGroup[]) {
+  return groups.flatMap((g) => [
+    new Paragraph({ spacing: { before: 100, after: 40 }, children: [new TextRun({ text: g.theme || "General", bold: true })] }),
+    ...bulletList(g.points),
+  ]);
+}
+
 export async function renderReportDocx(content: ReportContent, meta: { org: string; country: string }): Promise<Buffer> {
   const componentRows = content.components.map(
     (c, i) =>
@@ -55,9 +66,9 @@ export async function renderReportDocx(content: ReportContent, meta: { org: stri
           new TableCell({
             borders,
             width: { size: 3500, type: WidthType.DXA },
-            shading: { fill: INDICATOR_FILLS[c.indicatorLevel] || TEAL_LIGHT, type: ShadingType.CLEAR },
+            shading: { fill: RAG_FILLS[toRag(c.rag)] || TEAL_LIGHT, type: ShadingType.CLEAR },
             margins: { top: 80, bottom: 80, left: 120, right: 120 },
-            children: [new Paragraph({ children: [new TextRun({ text: c.indicatorLevel || "Not set", bold: true })] })],
+            children: [new Paragraph({ children: [new TextRun({ text: toRag(c.rag), bold: true })] })],
           }),
         ],
       })
@@ -124,52 +135,73 @@ export async function renderReportDocx(content: ReportContent, meta: { org: stri
           heading("Executive summary"),
           para(content.executiveSummary),
 
-          heading("Context"),
-          para(content.context),
+          heading("Background and method"),
+          para(content.background),
 
-          heading("Readiness at a glance"),
+          heading("Context snapshot"),
+          para(content.contextSnapshot),
+
+          ...(content.dataQualityNote?.trim()
+            ? [new Paragraph({
+                shading: { fill: "FFF7E6", type: ShadingType.CLEAR },
+                spacing: { before: 80, after: 120 },
+                children: [new TextRun({ text: "Data-quality note. ", bold: true }), new TextRun(content.dataQualityNote)],
+              })]
+            : []),
+
+          heading("Component-by-component analysis"),
+          ...content.components.flatMap((c, i) => [
+            heading(`Component ${i + 1}: ${c.name} (${toRag(c.rag)})`, HeadingLevel.HEADING_2),
+            para(c.summary),
+            ...(c.enablers.length
+              ? [new Paragraph({ children: [new TextRun({ text: "Enablers", bold: true })], spacing: { before: 80, after: 40 } }), ...themeGroups(c.enablers)]
+              : []),
+            ...(c.barriers.length
+              ? [new Paragraph({ children: [new TextRun({ text: "Barriers", bold: true })], spacing: { before: 120, after: 40 } }), ...themeGroups(c.barriers)]
+              : []),
+            ...(c.crossCutting?.trim()
+              ? [new Paragraph({ shading: { fill: TEAL_LIGHT, type: ShadingType.CLEAR }, spacing: { before: 120, after: 80 }, children: [new TextRun({ text: "Cross-cutting: ", bold: true }), new TextRun(c.crossCutting)] })]
+              : []),
+            ...(c.actionPoints.length
+              ? [new Paragraph({ children: [new TextRun({ text: "Action points", bold: true })], spacing: { before: 120, after: 40 } }), ...themeGroups(c.actionPoints)]
+              : []),
+          ]),
+
+          heading("Overall feasibility and implications"),
+          ...([
+            ["Feasibility considerations", content.overall.feasibility],
+            ["Programme strategy implications", content.overall.strategyImplications],
+            ["Policy advocacy priorities", content.overall.policyAdvocacy],
+            ["Recommended next steps", content.overall.nextSteps],
+          ] as const).flatMap(([label, body]) =>
+            body?.trim() ? [heading(label, HeadingLevel.HEADING_2), para(body)] : []
+          ),
+
+          // ---- RAG feasibility dashboard (new page) ----
+          new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, children: [new TextRun("RAG feasibility dashboard")] }),
+          new Paragraph({
+            shading: { fill: TEAL_LIGHT, type: ShadingType.CLEAR },
+            spacing: { after: 120 },
+            children: [new TextRun({ text: `Overall: ${toRag(content.overall.rag)}. `, bold: true, color: TEAL_DARK }), new TextRun(content.overall.ragInterpretation)],
+          }),
           new Table({
             width: { size: 9360, type: WidthType.DXA },
             columnWidths: [5860, 3500],
             rows: componentRows,
           }),
           para("", { spacingAfter: 120 }),
+          ...content.components.flatMap((c) =>
+            c.ragSummary?.trim() ? [new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `${c.name}: `, bold: true }), new TextRun(c.ragSummary)] })] : []
+          ),
 
-          heading("Component findings"),
-          ...content.components.flatMap((c, i) => [
-            heading(`Component ${i + 1}: ${c.name} (${c.indicatorLevel || "Not set"})`, HeadingLevel.HEADING_2),
-            para(c.findings),
-            ...(c.challenges.length
-              ? [new Paragraph({ children: [new TextRun({ text: "Challenges", bold: true })], spacing: { after: 80 } }), ...bulletList(c.challenges)]
-              : []),
-            ...(c.supports.length
-              ? [new Paragraph({ children: [new TextRun({ text: "Supporting factors", bold: true })], spacing: { before: 120, after: 80 } }), ...bulletList(c.supports)]
-              : []),
-          ]),
+          ...(content.topActions.length
+            ? [heading("Top priority actions", HeadingLevel.HEADING_2),
+               ...content.topActions.map((r) => new Paragraph({ numbering: { reference: "recs", level: 0 }, spacing: { after: 80 }, children: [new TextRun(r)] }))]
+            : []),
 
-          heading("Thematic analysis"),
-          ...content.themeAnalysis.flatMap((t) => [
-            heading(t.theme, HeadingLevel.HEADING_2),
-            para(t.assessment),
-            ...(t.evidence.length ? bulletList(t.evidence.map((e) => `Evidence: ${e}`)) : []),
-          ]),
-
-          heading("Feasibility"),
-          new Paragraph({
-            shading: { fill: TEAL_LIGHT, type: ShadingType.CLEAR },
-            spacing: { after: 80 },
-            children: [new TextRun({ text: content.feasibility.verdict, bold: true, size: 26, color: TEAL_DARK })],
-          }),
-          para(content.feasibility.rationale),
-
-          heading("Recommendations"),
-          ...content.recommendations.map(
-            (r) =>
-              new Paragraph({
-                numbering: { reference: "recs", level: 0 },
-                spacing: { after: 80 },
-                children: [new TextRun(r)],
-              })
+          heading("RAG legend", HeadingLevel.HEADING_2),
+          ...RAG_LEGEND.map((r) =>
+            new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${r.level}: `, bold: true }), new TextRun(r.description)] })
           ),
         ],
       },

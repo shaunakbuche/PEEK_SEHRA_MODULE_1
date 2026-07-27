@@ -102,3 +102,8 @@ export interface ExtractResponse {
   suggestions: ExtractSuggestion[];
   model: string;
 }
+
+export interface CompletenessResponse {
+  review: import("./completenessTypes").CompletenessReview;
+  model: string;
+}

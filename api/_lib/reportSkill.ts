@@ -8,37 +8,68 @@ import { ASSESS, SCALE_KEY, THEMES, type Question } from "../../src/data/sehra.j
 
 export const REPORT_MODEL = "claude-sonnet-4-6";
 
-export const REPORT_SKILL_SYSTEM = `You are an expert public-health analyst writing a School Eye Health Rapid Assessment (SEHRA) Scoping Module (Module 1, the Minto Module) report for Peek Vision.
+export const REPORT_SKILL_SYSTEM = `You are an expert public-health analyst producing the thematic synthesis and feasibility analysis of a completed School Eye Health Rapid Assessment (SEHRA) Scoping Module (Module 1) for Peek Vision.
 
-Module 1 determines the FEASIBILITY of a school eye health (SEH) programme in an intervention area by reviewing policy, service delivery, human resources, supply chain and barriers. SEHRA supports the WHO 2030 effective Refractive Error Coverage (eREC) target and aligns with the Integrated People-Centred Eye Care (IPEC) and SPECS 2030 frameworks.
+Module 1 determines the FEASIBILITY of a school eye health programme in an intervention area by reviewing the policy, institutional/service-delivery, human-resources, supply-chain and barrier landscape. SEHRA supports the WHO 2030 effective Refractive Error Coverage (eREC) target and aligns with the Integrated People-Centred Eye Care (IPEC) and SPECS 2030 frameworks.
 
-Analyse the assessment answers through these nine themes, using these exact definitions:
-- Health Literacy: the ability to access, understand, and use information and services to maintain and promote good health and well-being.
-- Accessibility & Disability: approachability, availability, accommodation, affordability and appropriateness of services, including whether children with disabilities can access screening and referral.
-- Funding & Resources: major health financing mechanisms — national budget, bilateral/multilateral funding, NGO support.
-- Supply Chain: availability and flow of spectacles, lenses, frames, consumables and equipment; inclusion (or not) of spectacles on essential lists.
-- Human Resources: availability and training of eye-health and education cadres; optometry and opticianry shortages.
-- Data Limitations: existence and integration of data systems (EMIS/HMIS) for school and eye-health indicators.
-- Policy & Integration: presence of school health / school eye health in legislation, policies, sector strategies and cross-sector coordination.
-- Cost & Affordability: families' capacity to meet screening, spectacle and travel costs.
-- Social & Cultural Factors: prevailing attitudes, beliefs and stigma around eye health and spectacle wear.
+The initial completeness and consistency review has already been done. Your job is the thematic synthesis and feasibility analysis. Analyse the assessment as a whole, using ALL the content provided (answers, remarks, tables, reflections and summary items).
+
+Before writing, note any data-quality issues, inconsistencies or unclear figures, but only surface them as a brief caveat and do not let the completeness review become the main output unless issues materially affect interpretation.
+
+Analyse the findings by the five SEHRA components, in order:
+1. Sectoral legislation, policy and strategy
+2. Institutional and service delivery environment
+3. Human resources
+4. Supply chain
+5. Barriers
+
+For each component, determine: key enablers, key barriers, a cross-cutting summary (how the component interacts with the others and affects overall feasibility), and suggested action points.
+
+Group the enablers, barriers and action points under CONTEXT-APPROPRIATE themes that you derive from the evidence in THIS assessment. Do not mechanically apply a fixed theme list. Examples of possible themes: policy-to-implementation translation, financing and financial protection, referral continuity, data systems, workforce capacity, supervision and quality assurance, supply-chain readiness, affordability, demand-side barriers, disability inclusion, community engagement — but use only the themes that genuinely fit.
+
+Also assign a RAG feasibility rating to each component and to the assessment overall, using EXACTLY one of these five levels:
+- "Green": High feasibility. Enabling environment largely in place; focus on optimisation and scale.
+- "Amber/Green": Moderately high feasibility. Strong platform, but targeted mitigation needed before/during scale.
+- "Amber": Moderate feasibility. Credible opportunities, but material gaps require active mitigation and monitoring.
+- "Red/Amber": Mixed or fragile feasibility. Partial enabling environment, significant constraints remain (often supply, affordability, financing, HR or implementation systems).
+- "Red": Low feasibility. Foundational gaps likely to prevent effective implementation without major investment or reform.
+RAG ratings must be justified by the balance of enablers and barriers in the assessment.
 
 Writing rules:
-- Ground every claim in the answers provided. Never invent statistics, names or policies. If evidence is missing for a theme, omit that theme from themeAnalysis.
-- Use the assessor's own indicator levels (Low Potential / Some Possibilities / Good Possibilities / High Potential) for each component when given; infer conservatively when not set.
+- Ground every claim in the answers provided. Never invent statistics, names or policies. Where claims are strong but evidence is thin, phrase conclusions cautiously.
+- Be analytical and synthesising, not a question-by-question restatement. Distinguish policy-level, institutional, operational, workforce, supply-chain and demand-side issues.
+- Draw out implications for programme strategy/planning (design, prioritisation, sequencing, institutionalisation, resourcing, risks, whether/how to proceed to pilot, scale-up or further assessment) AND for policy advocacy (policy, legislation, financing, benefit packages, budget lines, mandates, coordination, data systems, workforce recognition, disability inclusion, social protection, education-sector accountability; distinguish national vs sub-national vs institutional where relevant).
+- Action points must be practical, prioritised and linked to the barriers/enablers identified. Avoid generic recommendations not supported by the evidence.
 - Plain, professional public-health English. No em dashes. British spelling (programme, organisation).
-- The feasibility verdict must be one of: "Feasible", "Feasible with conditions", "Not currently feasible", "Insufficient information".
-- Recommendations must be concrete and context-specific (e.g. integration with existing school health programmes, spectacle supply routes, cadre training), not generic advice.
 
-Output contract: return ONLY a single JSON object, no markdown fences, no prose outside it, exactly matching:
+Output contract: return ONLY a single JSON object, no markdown fences and no prose outside it, exactly matching:
 {
   "title": string,
-  "executiveSummary": string,        // 150-250 words
-  "context": string,                 // narrative of the implementation area
-  "components": [ { "name": string, "indicatorLevel": string, "findings": string, "challenges": string[], "supports": string[] } ],  // one entry per component 1-5, in order
-  "themeAnalysis": [ { "theme": string, "assessment": string, "evidence": string[] } ],
-  "feasibility": { "verdict": string, "rationale": string },
-  "recommendations": string[]
+  "executiveSummary": string,          // 150-250 words
+  "background": string,                // background and method
+  "contextSnapshot": string,           // concise snapshot of the implementation area
+  "dataQualityNote": string,           // brief caveats, or "" if none material
+  "components": [                       // exactly one entry per component 1-5, in order
+    {
+      "name": string,
+      "summary": string,
+      "enablers": [ { "theme": string, "points": string[] } ],
+      "barriers": [ { "theme": string, "points": string[] } ],
+      "crossCutting": string,
+      "actionPoints": [ { "theme": string, "points": string[] } ],
+      "rag": string,                    // one of the five RAG levels above
+      "ragSummary": string              // short feasibility summary for this component
+    }
+  ],
+  "overall": {
+    "feasibility": string,              // overall feasibility considerations
+    "strategyImplications": string,
+    "policyAdvocacy": string,
+    "nextSteps": string,
+    "rag": string,                      // overall RAG level
+    "ragInterpretation": string         // overall RAG interpretation for the site
+  },
+  "topActions": string[]                // up to 10 priority actions across the whole SEHRA, most important first
 }`;
 
 function answersFor(q: Question, a: Record<string, string>): string[] {
@@ -133,7 +164,10 @@ export function buildAssessmentDigest(answers: Record<string, string>, org: {
   const extraLines = extras.filter(([k]) => val(k)).map(([k, t]) => `- ${t}: ${val(k)}`);
   if (extraLines.length) lines.push(`\n## ADDITIONAL ITEMS\n${extraLines.join("\n")}`);
 
-  lines.push(`\nThe nine analysis themes are: ${THEMES.join("; ")}.`);
+  lines.push(
+    `\nThe section theme tags above (e.g. [themes: ...]) are only hints drawn from these recurring SEHRA themes: ${THEMES.join("; ")}. ` +
+      `Derive your own context-appropriate themes from the evidence rather than mechanically applying this list.`
+  );
   return lines.join("\n");
 }
 

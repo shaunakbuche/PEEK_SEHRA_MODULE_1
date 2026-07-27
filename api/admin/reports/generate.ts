@@ -55,7 +55,7 @@ export default route({
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
       const msg = await client.messages.create({
         model: REPORT_MODEL,
-        max_tokens: 8000,
+        max_tokens: 12000,
         system: REPORT_SKILL_SYSTEM,
         messages: [
           { role: "user", content: `Write the SEHRA Module 1 report for the assessment below.\n\n${digest}` },

@@ -4,6 +4,7 @@ import { Check, Sparkles } from "lucide-react";
 import { ComponentView } from "@/components/assessment/ComponentView";
 import { IncompleteView } from "@/components/assessment/IncompleteView";
 import { DocumentImport } from "@/components/assessment/DocumentImport";
+import { CompletenessCheck } from "@/components/CompletenessCheck";
 import { SummaryView } from "@/components/SummaryView";
 import { ASSESS } from "@/data/sehra";
 import { useField, setField, useStoreVersion, completionPct, componentDone, unansweredCount } from "@/lib/store";
@@ -147,12 +148,15 @@ export function AssessmentWorkspace({
               )}
             </button>
           </div>
-          <button
-            onClick={() => setImportOpen(true)}
-            className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
-          >
-            <Sparkles className="h-4 w-4" /> Fill in from a document
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <CompletenessCheck />
+            <button
+              onClick={() => setImportOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+            >
+              <Sparkles className="h-4 w-4" /> Fill in from a document
+            </button>
+          </div>
         </div>
       </div>
 

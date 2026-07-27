@@ -4,11 +4,12 @@ import {
   Search, Send, Sparkles, Trash2, Undo2, X,
 } from "lucide-react";
 import { api, type AssessmentPayload, type AssessmentStatus, type OrgRow } from "@/lib/api";
-import type { ReportContent } from "@/lib/reportTypes";
-import { INDICATOR_LEVELS } from "@/lib/reportTypes";
+import type { ReportContent, ThemeGroup } from "@/lib/reportTypes";
+import { RAG_LEVELS, normalizeReportContent } from "@/lib/reportTypes";
 import { ASSESS, SCALE_KEY, type Question } from "@/data/sehra";
 import { TopBar, StatusPill, STATUS_META } from "@/components/brand";
 import { ReportView } from "@/components/ReportView";
+import { CompletenessCheck } from "@/components/CompletenessCheck";
 import { Dialog } from "@/components/Dialog";
 import { MessageThread } from "@/components/MessageThread";
 import { useToast } from "@/lib/toast";
@@ -339,6 +340,37 @@ function ListEditor({ items, onChange, placeholder }: {
   );
 }
 
+function ThemeGroupsEditor({ label, groups, onChange }: {
+  label: string; groups: ThemeGroup[]; onChange: (v: ThemeGroup[]) => void;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+      <div className="space-y-3">
+        {groups.map((g, i) => (
+          <div key={i} className="rounded-lg border border-border bg-card p-3">
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <input value={g.theme} placeholder="Theme"
+                onChange={(e) => onChange(groups.map((x, j) => (j === i ? { ...x, theme: e.target.value } : x)))}
+                className="w-full rounded-md border border-input bg-card px-2.5 py-1.5 text-sm font-semibold outline-none transition focus:border-primary" />
+              <button type="button" onClick={() => onChange(groups.filter((_, j) => j !== i))}
+                aria-label={`Remove theme ${i + 1}`}
+                className="rounded-md px-2 text-muted-foreground hover:bg-secondary hover:text-destructive">
+                <X className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </div>
+            <ListEditor items={g.points} onChange={(pts) => onChange(groups.map((x, j) => (j === i ? { ...x, points: pts } : x)))} />
+          </div>
+        ))}
+        <button type="button" onClick={() => onChange([...groups, { theme: "", points: [""] }])}
+          className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+          <Plus className="h-3 w-3" /> Add theme
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Area({ label, value, onChange, rows = 4 }: {
   label: string; value: string; onChange: (v: string) => void; rows?: number;
 }) {
@@ -384,7 +416,7 @@ function ReportEditor({ reportId, initial, onPublished }: {
   reportId: string; initial: ReportContent; onPublished: (r: { pdfUrl: string | null; docxUrl: string | null }) => void;
 }) {
   const toast = useToast();
-  const [content, setContent] = useState<ReportContent>(initial);
+  const [content, setContent] = useState<ReportContent>(() => normalizeReportContent(initial));
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<"" | "save" | "approve">("");
   const [preview, setPreview] = useState(false);
@@ -451,68 +483,61 @@ function ReportEditor({ reportId, initial, onPublished }: {
               className="w-full rounded-lg border border-input bg-card px-3 py-2 font-serif text-lg outline-none transition focus:border-primary" />
           </label>
           <Area label="Executive summary" value={content.executiveSummary} onChange={(v) => up({ executiveSummary: v })} rows={6} />
-          <Area label="Context" value={content.context} onChange={(v) => up({ context: v })} rows={5} />
+          <Area label="Background and method" value={content.background} onChange={(v) => up({ background: v })} rows={4} />
+          <Area label="Context snapshot" value={content.contextSnapshot} onChange={(v) => up({ contextSnapshot: v })} rows={4} />
+          <Area label="Data-quality note (leave blank if none)" value={content.dataQualityNote} onChange={(v) => up({ dataQualityNote: v })} rows={3} />
 
-          {content.components.map((c, i) => (
-            <div key={i} className="rounded-xl border border-border bg-secondary/20 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-serif">Component {i + 1}: {c.name}</span>
-                <select
-                  value={c.indicatorLevel}
-                  onChange={(e) => up({ components: content.components.map((x, j) => j === i ? { ...x, indicatorLevel: e.target.value } : x) })}
-                  className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold outline-none focus:border-primary"
-                >
-                  {INDICATOR_LEVELS.map((l) => <option key={l}>{l}</option>)}
+          {content.components.map((c, i) => {
+            const patchComp = (patch: Partial<ReportContent["components"][number]>) =>
+              up({ components: content.components.map((x, j) => (j === i ? { ...x, ...patch } : x)) });
+            return (
+              <div key={i} className="space-y-3 rounded-xl border border-border bg-secondary/20 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-serif">Component {i + 1}: {c.name}</span>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                    RAG
+                    <select value={c.rag} onChange={(e) => patchComp({ rag: e.target.value })}
+                      className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold outline-none focus:border-primary">
+                      {RAG_LEVELS.map((l) => <option key={l}>{l}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <Area label="Summary" value={c.summary} rows={3} onChange={(v) => patchComp({ summary: v })} />
+                <ThemeGroupsEditor label="Enablers (by theme)" groups={c.enablers} onChange={(v) => patchComp({ enablers: v })} />
+                <ThemeGroupsEditor label="Barriers (by theme)" groups={c.barriers} onChange={(v) => patchComp({ barriers: v })} />
+                <Area label="Cross-cutting summary" value={c.crossCutting} rows={3} onChange={(v) => patchComp({ crossCutting: v })} />
+                <ThemeGroupsEditor label="Action points (by theme)" groups={c.actionPoints} onChange={(v) => patchComp({ actionPoints: v })} />
+                <Area label="RAG summary for this component" value={c.ragSummary} rows={2} onChange={(v) => patchComp({ ragSummary: v })} />
+              </div>
+            );
+          })}
+
+          <div className="space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-serif">Overall feasibility</span>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                Overall RAG
+                <select value={content.overall.rag} onChange={(e) => up({ overall: { ...content.overall, rag: e.target.value } })}
+                  className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold outline-none focus:border-primary">
+                  {RAG_LEVELS.map((l) => <option key={l}>{l}</option>)}
                 </select>
-              </div>
-              <Area label="Findings" value={c.findings} rows={3}
-                onChange={(v) => up({ components: content.components.map((x, j) => j === i ? { ...x, findings: v } : x) })} />
-              <div className="mt-3 grid gap-4 md:grid-cols-2">
-                <div>
-                  <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Challenges</span>
-                  <ListEditor items={c.challenges}
-                    onChange={(v) => up({ components: content.components.map((x, j) => j === i ? { ...x, challenges: v } : x) })} />
-                </div>
-                <div>
-                  <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Supporting factors</span>
-                  <ListEditor items={c.supports}
-                    onChange={(v) => up({ components: content.components.map((x, j) => j === i ? { ...x, supports: v } : x) })} />
-                </div>
-              </div>
+              </label>
             </div>
-          ))}
-
-          {content.themeAnalysis.map((t, i) => (
-            <div key={i} className="rounded-xl border border-border bg-secondary/20 p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold">{t.theme}</span>
-                <button onClick={() => up({ themeAnalysis: content.themeAnalysis.filter((_, j) => j !== i) })}
-                  className="text-xs text-muted-foreground hover:text-destructive">Remove theme</button>
-              </div>
-              <Area label="Assessment" value={t.assessment} rows={3}
-                onChange={(v) => up({ themeAnalysis: content.themeAnalysis.map((x, j) => j === i ? { ...x, assessment: v } : x) })} />
-              <div className="mt-3">
-                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Evidence</span>
-                <ListEditor items={t.evidence}
-                  onChange={(v) => up({ themeAnalysis: content.themeAnalysis.map((x, j) => j === i ? { ...x, evidence: v } : x) })} />
-              </div>
-            </div>
-          ))}
-
-          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
-            <label className="mb-3 block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Feasibility verdict</span>
-              <input value={content.feasibility.verdict}
-                onChange={(e) => up({ feasibility: { ...content.feasibility, verdict: e.target.value } })}
-                className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm font-semibold outline-none transition focus:border-primary" />
-            </label>
-            <Area label="Rationale" value={content.feasibility.rationale} rows={3}
-              onChange={(v) => up({ feasibility: { ...content.feasibility, rationale: v } })} />
+            <Area label="Feasibility considerations" value={content.overall.feasibility} rows={3}
+              onChange={(v) => up({ overall: { ...content.overall, feasibility: v } })} />
+            <Area label="Programme strategy implications" value={content.overall.strategyImplications} rows={3}
+              onChange={(v) => up({ overall: { ...content.overall, strategyImplications: v } })} />
+            <Area label="Policy advocacy priorities" value={content.overall.policyAdvocacy} rows={3}
+              onChange={(v) => up({ overall: { ...content.overall, policyAdvocacy: v } })} />
+            <Area label="Recommended next steps" value={content.overall.nextSteps} rows={3}
+              onChange={(v) => up({ overall: { ...content.overall, nextSteps: v } })} />
+            <Area label="Overall RAG interpretation" value={content.overall.ragInterpretation} rows={2}
+              onChange={(v) => up({ overall: { ...content.overall, ragInterpretation: v } })} />
           </div>
 
           <div>
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Recommendations</span>
-            <ListEditor items={content.recommendations} onChange={(v) => up({ recommendations: v })} />
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Top priority actions</span>
+            <ListEditor items={content.topActions} onChange={(v) => up({ topActions: v })} />
           </div>
         </div>
       )}
@@ -705,6 +730,10 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2 pb-2">
+              <CompletenessCheck
+                orgId={org.id}
+                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary"
+              />
               {["submitted", "in_review"].includes(a.status) && (
                 <button onClick={() => setReturnOpen(true)} disabled={returnBusy}
                   className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-amber-400 hover:text-amber-600 disabled:opacity-50">
