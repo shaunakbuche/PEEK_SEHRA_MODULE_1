@@ -1,4 +1,10 @@
 import { ASSESS, SCALE_KEY, type Question } from "../../src/data/sehra.js";
+import {
+  CompletenessSchema,
+  normalizeCompletenessReview,
+  type CompletenessReview,
+} from "../../src/lib/completenessTypes.js";
+import { extractJson } from "./reportSkill.js";
 
 /**
  * The "completeness-reviewer skill": Haroon's step 1. Turns a submitted SEHRA
@@ -108,4 +114,75 @@ export function buildCompletenessDigest(answers: Record<string, string>, org: {
   extras.forEach(([k, t]) => lines.push(`${t}: ${val(k) || BLANK}`));
 
   return lines.join("\n");
+}
+
+/**
+ * Validate a completeness review pasted back in from the analysis skill. Step 1
+ * normally runs inside Claude Enterprise, so the review arrives as text copied
+ * out of a chat: sometimes the bare object, sometimes a JSON string, often
+ * inside a markdown fence or with a sentence either side. extractJson is reused
+ * so a paste is tolerated exactly as far as a model response is. The shape is
+ * then coerced with normalizeCompletenessReview, and anything that is not a
+ * review at all throws a message the school or admin can act on.
+ */
+export function parseSkillCompleteness(raw: unknown): CompletenessReview {
+  let candidate: any = raw;
+
+  if (typeof candidate === "string") {
+    if (!candidate.trim()) {
+      throw new Error("Nothing was pasted. Copy the completeness review JSON from the skill and paste it here.");
+    }
+    try {
+      candidate = extractJson(candidate);
+    } catch {
+      throw new Error(
+        "That is not valid JSON. Paste the whole object the skill produced, starting with { and ending with }. A markdown code fence or a sentence either side is fine."
+      );
+    }
+  }
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    throw new Error("Expected a JSON object containing the completeness review. Paste the whole object the skill produced.");
+  }
+  if (candidate.sehraExport) {
+    throw new Error(
+      "That is a SEHRA export (the assessment sent TO the skill), not a completeness review. Paste the review JSON the skill produced."
+    );
+  }
+
+  const inner =
+    candidate.review ?? candidate.completenessReview ?? (candidate.overallFinding ? null : candidate.content);
+  if (inner && typeof inner === "object" && !Array.isArray(inner)) candidate = inner;
+
+  if (!candidate.overallFinding && (candidate.executiveSummary || candidate.topActions)) {
+    throw new Error(
+      "That is the step 2 synthesis report, not the step 1 completeness review. Paste the completeness review JSON instead."
+    );
+  }
+
+  const review = normalizeCompletenessReview(candidate);
+
+  const missing: string[] = [];
+  if (!review.overallFinding.trim()) missing.push("overallFinding");
+  if (!review.overallSummary.trim()) missing.push("overallSummary");
+  if (!review.componentStatus.length) missing.push("componentStatus");
+  if (missing.length) {
+    throw new Error(
+      `The completeness review JSON is missing: ${missing.join(", ")}. Paste the review output, the object with overallFinding, overallSummary, componentStatus and bottomLine.`
+    );
+  }
+
+  const unnamed = review.componentStatus.findIndex((c) => !c.component.trim());
+  if (unnamed !== -1) {
+    throw new Error(
+      `Entry ${unnamed + 1} of componentStatus has no "component". Every entry needs the component it refers to.`
+    );
+  }
+
+  const parsed = CompletenessSchema.safeParse(review);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const where = issue?.path.join(".") || "the review";
+    throw new Error(`The completeness review JSON does not match the expected shape (${where}: ${issue?.message ?? "invalid"}).`);
+  }
+  return parsed.data;
 }

@@ -30,10 +30,35 @@ dashes.
 ## Before you write
 
 Run the deterministic scripts in `scripts/` on the export and use their output as the factual
-basis for everything numeric. They give you the blank inventory, the conditional-blank
-classification, per-component completion and every arithmetic reconciliation. Do not recompute
-totals yourself, and do not report a number the scripts did not produce or the JSON did not
-contain.
+basis for everything numeric:
+
+```bash
+python3 scripts/consistency_checks.py path/to/export.json --json
+python3 scripts/summarise_export.py   path/to/export.json
+```
+
+Never pass `--skip-blanks` at this stage. This review exists to see what is missing.
+
+The checks give you the blank inventory, the conditional-blank classification, per-component
+completion, and a **limited** set of arithmetic and consistency checks. `SKILL.md` lists exactly
+what those are. In summary the scripts verify rows and columns literally named `Total` against
+the sum of their siblings, flag unit mismatches between rate-labelled and count-labelled fields,
+flag truncated values and placeholders, flag Yes/No answers whose remarks contradict them, and
+compare tables in different components that share at least two row and two column labels.
+
+They do **not** understand the subject matter. They do not know what an age group, a school, an
+enrolment figure, a cadre, a facility, a screening number, a referral number, a spectacle count
+or a minimum wage is, and they do not compare figures that appear in free text rather than in a
+table.
+
+**This matters for how you write section 3 below.** Everything Haroon asks you to check that the
+scripts did not compute is your reading of the entered values, not a machine reconciliation.
+Report those separately and label them as such: "the entered figures suggest" rather than "the
+check failed". Quote both figures either way, so the submitting team can see exactly what was
+compared and correct you if the comparison was wrong.
+
+Do not recompute totals yourself, and do not report a number the scripts did not produce and the
+JSON does not contain.
 
 ## Conditional blanks
 
@@ -76,31 +101,69 @@ completed because the Yes/No answer needs explanation to be usable.
 
 ### 3. Internal consistency: arithmetic
 
-Using the script output, check:
+This section has two halves and they must stay visibly distinct in your output.
+
+#### 3a. What the scripts verified
+
+Report these as reconciled or not reconciled, quoting the actual figures from the `evidence` on
+each finding. These are deterministic:
+
+- **Named totals.** Every row or column literally called `Total`, and every grouped total of the
+  form `<prefix> / Total`, against the sum of its siblings. This is what catches an enrolment
+  Total that does not match its Male and Female entries, or a school-count Total that does not
+  match its columns. A total the scripts could not check, because a contributor was blank or
+  non-numeric, is reported as unverifiable; say so rather than filling the gap yourself.
+- **Rates against counts, in both directions.** A value above 100 with no percent sign in a field
+  labelled as a rate, percentage, proportion, coverage or attendance, and a percent sign in a
+  field labelled as a count. An attendance figure in the thousands is the usual case.
+- **Truncated values, ranges and placeholders** such as `TBC` and `N/A`.
+- **The same grid in two components.** Where two tables in different components share at least
+  two row and two column labels, differing cells are reported with both figures and both
+  locations. This is what catches a school count that differs between Context and Component 2.
+
+#### 3b. What you must check yourself, and label as your own reading
+
+Haroon asks for more than the scripts compute. Do the rest of it by reading the digest, and
+present it as a reviewer's observation rather than a verified reconciliation. Quote both figures
+in every case. Where a comparison depends on an assumption, state the assumption.
 
 - **Population and age groups.** Do the 1 to 4, 5 to 9, 10 to 14 and 15 to 19 counts sit
   plausibly within the stated total population?
-- **School counts.** Does the "Total" column reconcile with the level columns, and do the
-  Public, Private and NGO or Faith-based rows sum sensibly? Do the Context school counts agree
-  with the Component 2 education infrastructure table?
-- **Enrolment.** Do the Male and Female figures sum to the Total for each school type? Is
-  enrolment plausible against the school-age population?
-- **Attendance rates.** Are these entered as rates, and are they within 0 to 100? A value in the
-  thousands in an attendance field is almost certainly a count.
-- **Counts entered as rates, or the reverse.** Check both directions.
+- **School counts against other sections.** Do the Context school counts agree with the
+  Component 2 education infrastructure table where the scripts did not pair the two grids?
+- **Enrolment plausibility.** Is enrolment credible against the school-age population?
 - **Cadre totals.** Do the health and education human-resources tables sum consistently across
   sectors, and are the numbers plausible for the stated population?
-- **Facility totals.** Does the health infrastructure table reconcile internally, and does it
-  agree with statements elsewhere about how many facilities offer secondary or tertiary eye
-  care?
+- **Facility totals.** Does the health infrastructure table agree with statements elsewhere about
+  how many facilities offer secondary or tertiary eye care?
+- **Screening numbers.** Where numbers screened, or coverage of any existing screening activity,
+  are given, are they consistent with the school and enrolment figures and with each other?
+- **Referral numbers.** Are referrals made, referrals attended and referral completion mutually
+  consistent, and consistent with the screening numbers? A referral count above the number
+  screened is a clear error.
+- **Spectacle quantities and numbers.** Are spectacles prescribed, dispensed and collected
+  consistent with each other and with the referral numbers? Do stated stock or supply quantities
+  match statements made elsewhere about availability?
 - **Prevalence.** Are Males, Females and "Males and females" figures mutually consistent? Are
   they percentages where percentages are expected?
 - **Costs and financing.** Do the spectacle costing figures use one currency consistently, and
   are public and private prices in a plausible relationship? Compare against the stated minimum
-  wage. Flag any budget or financing figure that does not reconcile.
+  wage, saying that the comparison is yours. Flag any budget or financing figure that does not
+  reconcile.
+- **Totals against component values.** Where a figure given as a total in one place is broken
+  down elsewhere in the module, do the two agree?
+- **Duplication.** Is the same figure, statement or list entered twice, whether in two fields, in
+  a field and its remarks, or repeated within one answer? Duplication is often a copy-paste error
+  that has overwritten a different intended answer, so it is worth flagging even when harmless.
 - **The same figure across sections.** Where a number appears more than once, does it match?
+  Note that the scripts only compare tables, so any figure repeated in free text is yours to
+  check.
+- **The same topic across sections.** Where a topic is addressed in more than one place, are the
+  statements consistent? This covers prose as well as figures. A service described as available
+  in Context and as absent in Component 2 is a finding even though no number is involved.
 
-Report each check as reconciled or not reconciled, quoting the actual figures.
+Report each check as reconciled or not reconciled, quoting the actual figures, and make clear
+which half of this section each one came from.
 
 ### 4. Logical consistency
 
@@ -152,6 +215,11 @@ Order by importance. Only items that genuinely need follow-up belong here.
 A short summary paragraph, then two lists: figures that **reconciled**, and figures that **did
 not reconcile**. Quote the figures in both lists so the team can see what was checked.
 
+Mark which entries came from the deterministic checks and which are your own reading of the
+entered values. A short parenthetical is enough, for example "(script check)" or "(reviewer
+comparison, please confirm)". A team that cannot tell the difference cannot tell whether to
+correct the module or to correct the reviewer.
+
 **4. Per-component status**
 
 One line per component, components 1 to 5. Give a status such as `Complete`, `Largely
@@ -164,9 +232,21 @@ A short bulleted list of editorial and formatting points.
 
 **6. Bottom line**
 
-A one-paragraph summary, then a numbered list of **priority corrections**: the small number of
-things to fix first, most important first. This is the list the submitting team will work from,
-so keep it short and concrete.
+Two parts, in this order.
+
+First, **state explicitly whether the module is ready for thematic analysis.** This is Haroon's
+requirement and it is the single sentence the reader is looking for, so do not leave it to be
+inferred from the overall finding or from the length of the corrections list. Say one of:
+
+- ready for thematic analysis
+- ready for thematic analysis once the corrections below are made
+- not yet ready for thematic analysis
+
+Follow it with a one-paragraph explanation of that judgement.
+
+Second, a numbered list of **priority corrections**: the small number of things to fix first,
+most important first. This is the list the submitting team will work from, so keep it short and
+concrete. The readiness statement comes before this list, never after it and never inside it.
 
 ## Optional JSON output
 
@@ -188,10 +268,12 @@ else. It must match `CompletenessSchema` in `src/lib/completenessTypes.ts`:
   "consistencyChecks": {
     "summary": "Most Context figures reconcile. Two school and enrolment totals do not.",
     "reconciled": [
-      "Age-group counts (1 to 4: 42000; 5 to 9: 51000; 10 to 14: 48000; 15 to 19: 39000) sit within the stated total population of 620000."
+      "Public school counts by level sum to the Total column (120 plus 140 plus 80 gives 340). (Script check.)",
+      "Age-group counts (1 to 4: 42000; 5 to 9: 51000; 10 to 14: 48000; 15 to 19: 39000) sit within the stated total population of 620000. (Reviewer comparison, please confirm.)"
     ],
     "notReconciled": [
-      "Public enrolment male 18400 plus female 17900 gives 36300, but the Public / Total cell records 38200."
+      "Public enrolment male 18400 plus female 17900 gives 36300, but the Public / Total cell records 38200. (Script check.)",
+      "Referrals recorded as attended (1420) exceed referrals made (1180). (Reviewer comparison, please confirm which figure is correct.)"
     ]
   },
   "componentStatus": [
@@ -206,7 +288,7 @@ else. It must match `CompletenessSchema` in `src/lib/completenessTypes.ts`:
     "Currency is not stated in 4.4; add it so the figures can be interpreted."
   ],
   "bottomLine": {
-    "summary": "The module is usable once the supply-chain costing and the human-resources tables are corrected. Nothing found so far blocks synthesis structurally.",
+    "summary": "The module will be ready for thematic analysis once the corrections below are made. It is usable in structure and coverage; the supply-chain costing and the human-resources tables are what stand in the way. Nothing found so far blocks synthesis structurally.",
     "priorityCorrections": [
       "Confirm and correct the public and private spectacle prices in 4.4, and state the currency.",
       "Complete the education cadre counts in 3.2 for NGO and Faith-based columns, or record explicitly that none exist.",
@@ -219,3 +301,8 @@ else. It must match `CompletenessSchema` in `src/lib/completenessTypes.ts`:
 Return only the JSON object, with no markdown fences and no prose around it, when JSON is
 requested. Every string must be plain text: the website renders it directly into the review
 page. Provide one `componentStatus` entry per component, 1 to 5, in order.
+
+`bottomLine.summary` must **open with the readiness statement** in the same form as the Markdown
+review: ready for thematic analysis, ready once the corrections are made, or not yet ready. The
+JSON has no separate field for it, so if it is not the first thing in that string it is not in
+the output at all.

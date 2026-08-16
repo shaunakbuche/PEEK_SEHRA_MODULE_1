@@ -9,7 +9,7 @@ import {
   type SehraExportQuestion,
 } from "./sehraExport";
 
-const ORG = { name: "Makueni County", country: "Kenya", region: "Eastern" };
+const ORG = { name: "Example County", country: "Example Country", region: "Example Region" };
 const ASSESSMENT = {
   id: "11111111-2222-3333-4444-555555555555",
   status: "submitted",
@@ -74,7 +74,7 @@ describe("buildSehraExport / contract shape", () => {
   it("prefers the assessor's meta fields over the organisation record", () => {
     const x = build({ meta_country: "Nepal", meta_province: "Bagmati", meta_district: "Lalitpur", meta_date: "2026-02-14" });
     expect(x.organisation).toEqual({
-      name: "Makueni County",
+      name: "Example County",
       country: "Nepal",
       region: "Bagmati",
       district: "Lalitpur",
@@ -84,8 +84,8 @@ describe("buildSehraExport / contract shape", () => {
 
   it("falls back to the organisation record when meta fields are blank", () => {
     const x = build();
-    expect(x.organisation.country).toBe("Kenya");
-    expect(x.organisation.region).toBe("Eastern");
+    expect(x.organisation.country).toBe("Example Country");
+    expect(x.organisation.region).toBe("Example Region");
     expect(x.organisation.district).toBe("");
   });
 
@@ -265,7 +265,7 @@ describe("buildSehraExport / rawAnswers and summary extras", () => {
 describe("sehraExportFilename", () => {
   it("slugs the organisation name and dates the file from exportedAt", () => {
     const doc = buildSehraExport({}, ORG, ASSESSMENT, { exportedAt: AT });
-    expect(sehraExportFilename(doc)).toBe("sehra-export-makueni-county-2026-03-03.json");
+    expect(sehraExportFilename(doc)).toBe("sehra-export-example-county-2026-03-03.json");
   });
 
   it("collapses punctuation and falls back when the name slugs to nothing", () => {
@@ -290,7 +290,7 @@ describe("downloadSehraExport", () => {
     expect(createObjectURL).toHaveBeenCalledOnce();
     expect(click).toHaveBeenCalledOnce();
     const anchor = click.mock.instances[0] as HTMLAnchorElement;
-    expect(anchor.download).toBe("sehra-export-makueni-county-2026-03-03.json");
+    expect(anchor.download).toBe("sehra-export-example-county-2026-03-03.json");
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:sehra");
     expect(document.querySelector("a[download]")).toBeNull();
   });

@@ -55,7 +55,7 @@ describe("buildAssessmentDigest", () => {
 
 describe("parseSkillReport", () => {
   const skillReport = () => ({
-    title: "SEHRA Module 1 — Makueni",
+    title: "SEHRA Module 1 — Example District",
     executiveSummary: "A short summary of feasibility.",
     background: "Background and method.",
     contextSnapshot: "Context.",
@@ -85,18 +85,18 @@ describe("parseSkillReport", () => {
 
   it("accepts a well-formed skill report", () => {
     const out = parseSkillReport(skillReport());
-    expect(out.title).toBe("SEHRA Module 1 — Makueni");
+    expect(out.title).toBe("SEHRA Module 1 — Example District");
     expect(out.components).toHaveLength(1);
     expect(out.overall.rag).toBe("Amber");
   });
 
   it("accepts the report as a JSON string", () => {
-    expect(parseSkillReport(JSON.stringify(skillReport())).title).toBe("SEHRA Module 1 — Makueni");
+    expect(parseSkillReport(JSON.stringify(skillReport())).title).toBe("SEHRA Module 1 — Example District");
   });
 
   it("unwraps a { content } or { report: { content } } envelope", () => {
-    expect(parseSkillReport({ content: skillReport() }).title).toBe("SEHRA Module 1 — Makueni");
-    expect(parseSkillReport({ report: { content: skillReport() } }).title).toBe("SEHRA Module 1 — Makueni");
+    expect(parseSkillReport({ content: skillReport() }).title).toBe("SEHRA Module 1 — Example District");
+    expect(parseSkillReport({ report: { content: skillReport() } }).title).toBe("SEHRA Module 1 — Example District");
   });
 
   it("fills safe defaults for optional fields the skill left out", () => {

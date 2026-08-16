@@ -4,10 +4,10 @@
     "exportedAt": "2026-05-14T09:12:44.000Z",
     "tool": "SEHRA Scoping Module (Module 1)",
     "organisation": {
-      "name": "Peek Vision / Makueni County Eye Health Team",
-      "country": "Kenya",
-      "region": "Eastern",
-      "district": "Makueni",
+      "name": "Example County Eye Health Team",
+      "country": "Example Country",
+      "region": "Example Region",
+      "district": "Example District",
       "assessmentDate": "2026-05-06"
     },
     "assessment": {
@@ -17,14 +17,16 @@
       "updatedAt": "2026-05-14T08:55:10.000Z"
     },
     "completion": {
-      "totalFields": 118,
-      "answeredFields": 94,
-      "percent": 80,
+      "totalFields": 142,
+      "answeredFields": 120,
+      "percent": 85,
       "byComponent": [
-        { "id": "context", "title": "Context", "total": 62, "answered": 48, "percent": 77 },
-        { "id": "c1", "title": "Sectoral Legislation, Policy and Strategy", "total": 17, "answered": 14, "percent": 82 },
-        { "id": "c2", "title": "Institutional and Service Delivery Environment", "total": 33, "answered": 28, "percent": 85 },
-        { "id": "c4", "title": "Supply Chain", "total": 6, "answered": 4, "percent": 67 }
+        { "id": "context", "title": "Context", "total": 66, "answered": 50, "percent": 76 },
+        { "id": "c1", "title": "Sectoral Legislation, Policy and Strategy", "total": 7, "answered": 6, "percent": 86 },
+        { "id": "c2", "title": "Institutional and Service Delivery Environment", "total": 45, "answered": 42, "percent": 93 },
+        { "id": "c3", "title": "Human Resources", "total": 14, "answered": 14, "percent": 100 },
+        { "id": "c4", "title": "Supply Chain", "total": 3, "answered": 3, "percent": 100 },
+        { "id": "c5", "title": "Barriers", "total": 7, "answered": 5, "percent": 71 }
       ]
     },
     "components": [
@@ -146,7 +148,7 @@
                 "type": "text",
                 "text": "Primary ethnic groups (please list)",
                 "help": "",
-                "answer": "Kamba majority, with Maasai and Kikuyu minorities in the southern wards.",
+                "answer": "Example Group A is the majority, with Example Groups B and C forming minorities in the southern wards.",
                 "remarks": null,
                 "blank": false,
                 "options": null,
@@ -389,7 +391,7 @@
                 "type": "text",
                 "text": "What are the major health financing mechanisms?",
                 "help": "",
-                "answer": "County health allocation from the national equitable share, the national health insurance fund, and out-of-pocket payment at facility level.",
+                "answer": "County health allocation from the national budget transfer, the national health insurance scheme, and out-of-pocket payment at facility level.",
                 "remarks": null,
                 "blank": false,
                 "options": null,
@@ -558,6 +560,69 @@
         ]
       },
       {
+        "id": "c3",
+        "number": 3,
+        "title": "Human Resources",
+        "purpose": "To find out if the right people, with the right skills, in the right place, are in enough numbers to operationalise a school eye health programme.",
+        "readinessRating": { "value": 2, "label": "Some Possibilities" },
+        "subsections": [
+          {
+            "id": "3.1",
+            "title": "Type of Cadres / Health",
+            "themes": ["Human Resources"],
+            "questions": [
+              {
+                "id": "c3_h_avail",
+                "type": "yn",
+                "text": "Are essential health human resources available to implement school health / school eye health?",
+                "help": "",
+                "answer": "Yes",
+                "remarks": "Two refractionists and one ophthalmologist are posted at the referral hospital, supported by community health workers at ward level.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c3_h_count",
+                "type": "table",
+                "text": "Type and number of essential health human resources in the intervention area",
+                "help": "Approximate counts are fine.",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["Public Sector", "NGO Sector", "Private Sector", "Total"],
+                  "rows": ["Community health workers", "Refractionists / Optometrists", "Ophthalmologists"],
+                  "cells": [
+                    ["420", "35", "12", "467"],
+                    ["6", "2", "3", "11"],
+                    ["2", "0", "1", "3"]
+                  ]
+                },
+                "reflections": null
+              },
+              {
+                "id": "c3_h_capdev",
+                "type": "text",
+                "text": "What additional capacity development needs are likely required?",
+                "help": "",
+                "answer": "Refresher training on paediatric refraction, and orientation of head teachers on the referral pathway.",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "c4",
         "number": 4,
         "title": "Supply Chain",
@@ -574,7 +639,7 @@
                 "type": "field",
                 "text": "What is the minimum wage in local currency?",
                 "help": "A reference point for judging whether spectacle prices are affordable locally.",
-                "answer": "15,201 KES per month",
+                "answer": "15,201 per month in local currency units",
                 "remarks": null,
                 "blank": false,
                 "options": null,
@@ -611,6 +676,74 @@
             ]
           }
         ]
+      },
+      {
+        "id": "c5",
+        "number": 5,
+        "title": "Barriers",
+        "purpose": "A cross-cutting component: to explore barriers that would hinder delivery of child eye health services through a school eye health programme.",
+        "readinessRating": { "value": 2, "label": "Some Possibilities" },
+        "subsections": [
+          {
+            "id": "5.1",
+            "title": "Cultural perceptions",
+            "themes": ["Social & Cultural Factors"],
+            "questions": [
+              {
+                "id": "c5_child",
+                "type": "yn",
+                "text": "Evidence that the health of children is not prioritised in the intervention area?",
+                "help": "",
+                "answer": "No",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c5_girls",
+                "type": "yn",
+                "text": "Evidence that the health needs of girls are not prioritised?",
+                "help": "",
+                "answer": "Yes",
+                "remarks": "A household survey in the southern wards found that girls were taken for treatment later than boys after a school referral.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "5.2",
+            "title": "Barriers to wearing eyeglasses / parents & children",
+            "themes": ["Social & Cultural Factors", "Cost & Affordability"],
+            "questions": [
+              {
+                "id": "c5_costs",
+                "type": "group",
+                "text": "Barriers / costs",
+                "help": "",
+                "answer": null,
+                "remarks": "Cost barriers were raised repeatedly by head teachers during the scoping visit.",
+                "blank": false,
+                "options": null,
+                "items": [
+                  { "label": "Fear of loss of earnings / daily wages by parents to access eyeglasses", "answer": "Yes" },
+                  { "label": "Limited availability of financial resources in family to procure eyeglasses", "answer": "Yes" },
+                  { "label": "Travel cost to point of referral", "answer": "Yes" },
+                  { "label": "Cost of eyeglasses", "answer": "" },
+                  { "label": "Cost of eye care treatment", "answer": "" }
+                ],
+                "table": null,
+                "reflections": null
+              }
+            ]
+          }
+        ]
       }
     ],
     "summaryExtras": {
@@ -619,9 +752,9 @@
       "sum_unserved": "Children in the six southern wards and children in non-formal settlements receive no school-based eye screening."
     },
     "rawAnswers": {
-      "meta_country": "Kenya",
-      "meta_province": "Eastern",
-      "meta_district": "Makueni",
+      "meta_country": "Example Country",
+      "meta_province": "Example Region",
+      "meta_district": "Example District",
       "meta_date": "2026-05-06",
       "ctx_pop": "1,012,600",
       "ctx_schools__0_1": "412",

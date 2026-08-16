@@ -30,7 +30,10 @@ is saved. Getting this exactly right is what makes the loop work without an API 
 - **`rag` values must be one of** `Green`, `Amber/Green`, `Amber`, `Red/Amber`, `Red`. The schema
   types these as plain strings so an odd value never breaks parsing, but the website normalises
   anything unrecognised to `Amber` without warning. A typo therefore changes the rating silently.
-- **`topActions` holds up to ten strings**, most important first, each a single sentence.
+- **`topActions` holds ten strings**, most important first, each a single sentence. Ten is the
+  target Haroon specifies, not an upper bound to stop short of. Return fewer only where the
+  evidence does not support ten distinct, evidence-linked actions, and say so in the report when
+  that happens. The schema does not enforce a length, so nothing will warn you.
 - **`dataQualityNote`** is `""` when there is nothing material to flag. Do not write "None" or
   "No issues identified"; the site hides the section when the string is empty.
 
@@ -38,7 +41,7 @@ is saved. Getting this exactly right is what makes the loop work without an API 
 
 | Field | Type | Contents |
 | --- | --- | --- |
-| `title` | string | Report title, for example "SEHRA Module 1 Scoping Report: Makueni County, Kenya" |
+| `title` | string | Report title, for example "SEHRA Module 1 Scoping Report: Example District, Example Country". Use the real site name from the export, never a placeholder and never a site from another assessment |
 | `executiveSummary` | string | 150 to 250 words. The whole report in one passage |
 | `background` | string | Background to SEHRA and the method used for this assessment |
 | `contextSnapshot` | string | Concise snapshot of the implementation area, drawn from the Context section |
@@ -58,7 +61,7 @@ is saved. Getting this exactly right is what makes the loop work without an API 
 | `overall.nextSteps` | string | Concrete next steps, in sequence |
 | `overall.rag` | string | Overall RAG level, one of the five |
 | `overall.ragInterpretation` | string | What the overall rating means for this site |
-| `topActions` | array of strings | Up to ten priority actions, most important first |
+| `topActions` | array of strings | The top 10 priority actions, most important first. Ten is the target; fewer only where the evidence cannot support ten |
 
 A **theme group** is always exactly `{ "theme": "...", "points": ["...", "..."] }`. Both keys are
 required. `points` may be empty but the key must be present. Do not nest theme groups.
@@ -68,9 +71,39 @@ the dashboard, in the PDF and in the Word document.
 
 ## Worked example
 
-This is a complete, minimal object that validates. Real reports carry substantially more content
-in every string and more points per theme; the shape is what matters here. The figures are
-illustrative only.
+> ### Read this before the example
+>
+> **This example illustrates STRUCTURE ONLY.** Its wording, analysis, themes, RAG ratings and
+> action points must not be reused.
+>
+> Haroon's requirement, in his words: "Use the sample report only to understand the expected
+> structure, level of detail, tone and type of output. Do not copy the wording, analysis, themes,
+> RAG ratings or action points from the sample report. The new analysis must be original,
+> context-specific and based on the SEHRA under analysis."
+>
+> Concretely, none of the following may be carried across:
+>
+> - **The theme names.** "Policy-to-implementation translation", "Referral continuity", "Data
+>   systems", "Supply-chain readiness", "Affordability and financial protection", "Community
+>   engagement" and the rest are this example's themes. Derive your own from the evidence in front
+>   of you. If yours match the example's, check that the evidence drove that and not the example.
+> - **The RAG ratings.** `Amber`, `Red/Amber`, `Amber`, `Red`, `Red/Amber` and the overall
+>   `Red/Amber` here are invented for illustration. They carry no prior and are not a default
+>   shape for a SEHRA. Rate from the balance of enablers and barriers in your assessment.
+> - **The action points and `topActions`.** Every one is tied to a fabricated finding.
+> - **The sentences.** Not the executive summary, not the `crossCutting` paragraphs, not the
+>   `ragSummary` lines, not the `background` boilerplate. Write the background from this
+>   assessment's own method and site.
+> - **The figures.** 620,000 population, 412 schools, 340 public, 74,500 enrolled, 88 per cent
+>   attendance, two refractionists, two optical outlets: all invented. A figure that appears in
+>   your output must come from the assessment JSON or from a script's output.
+>
+> Take from the example only the shape of the object, the level of detail expected in each field,
+> and the register. Everything else must be original and specific to the SEHRA under analysis.
+
+With that understood: this is a complete, minimal object that validates. Real reports carry
+substantially more content in every string and more points per theme; the shape is what matters
+here. The site, the findings and the figures are invented.
 
 ```json
 {
@@ -341,7 +374,11 @@ illustrative only.
 - [ ] Every theme group has both `theme` and `points`.
 - [ ] No key is missing; empty values are `""` or `[]`, never `null`.
 - [ ] `executiveSummary` is 150 to 250 words.
-- [ ] `topActions` has no more than ten entries, ordered by priority.
+- [ ] `topActions` has ten entries, ordered by priority. Fewer only because the evidence does not
+      support ten, and the report says so.
 - [ ] No markdown, no em dashes, British spelling throughout.
 - [ ] Every figure in the text appears in the assessment JSON or in a script's output.
+- [ ] Nothing has been carried over from the worked example: not its wording, themes, RAG ratings,
+      action points, figures or site name.
+- [ ] `title` names the site from this export.
 - [ ] The object is valid JSON and is the only thing in the message.

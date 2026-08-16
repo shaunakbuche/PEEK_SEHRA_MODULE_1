@@ -333,6 +333,11 @@ def yn_polarity(answer: Any) -> str:
 
 _ASKS_ON_YES = re.compile(r"if\s*['\"‘“]?yes", re.I)
 _ASKS_ON_NO = re.compile(r"if\s*['\"‘“]?no", re.I)
+# Help that poses its own questions ("Which ministry? What is the annual public
+# expenditure?") asks for the same detail without saying "If yes". Help that only
+# explains a term ("EMIS is the education sector's routine data system.") does
+# not, so the presence of help alone is never treated as a prompt.
+_HELP_PROMPTS = re.compile(r"\?")
 
 
 # ----------------------------------------------------- blank classification --
@@ -395,14 +400,21 @@ def classify_blanks(export: Dict[str, Any]) -> Dict[str, Any]:
                     add(conditional, ctx, "remarks", CONDITIONAL_RULES["parent_unanswered"], "minor")
                 continue
             if _is_blank(remarks):
-                prompts_on_yes = bool(_ASKS_ON_YES.search(ctx.help)) or bool(ctx.help)
+                asks_on_yes = bool(_ASKS_ON_YES.search(ctx.help))
+                help_prompts = bool(_HELP_PROMPTS.search(ctx.help))
                 prompts_on_no = bool(_ASKS_ON_NO.search(ctx.help))
                 if pol == "yes":
-                    add(genuine, ctx, "remarks after a Yes",
-                        "Answered Yes, so the remarks should say what exists. The question "
-                        "carries prompts for that detail." if prompts_on_yes else
-                        "Answered Yes with no supporting detail recorded.",
-                        "major" if prompts_on_yes else "minor")
+                    if asks_on_yes:
+                        add(genuine, ctx, "remarks after a Yes",
+                            "Answered Yes, and the question explicitly asks for detail on Yes.",
+                            "major")
+                    elif help_prompts:
+                        add(genuine, ctx, "remarks after a Yes",
+                            "Answered Yes, and the guidance on this question poses follow-up "
+                            "questions that nothing answers.", "major")
+                    else:
+                        add(genuine, ctx, "remarks after a Yes",
+                            "Answered Yes with no supporting detail recorded.", "minor")
                 elif pol in ("no", "na") and prompts_on_no:
                     add(genuine, ctx, "remarks after a No",
                         "Answered No and the question explicitly asks for detail on No.", "major")
@@ -575,7 +587,36 @@ def _pct(bucket: Dict[str, Any]) -> int:
     return int(round(100.0 * (bucket.get("answered") or 0) / total))
 
 
+# -------------------------------------------------- what a label asks for ---
+# Shared by the arithmetic checks (which figures may be added at all) and the
+# unit checks (which figures were entered in the wrong unit).
+
+_RATE_TOKENS = ("rate", "percentage", "per cent", "percent", "proportion", "coverage",
+                "attendance", "%")
+_AMBIGUOUS_TOKENS = ("enrolment", "enrollment")
+_COUNT_TOKENS = ("number of", "how many", "no. of", "count of", "total number", "number and type")
+
+
+def _label_expects(blob: str) -> str:
+    """Classify a label as expecting a "rate", a "count", "ambiguous" or ""."""
+    low = blob.lower()
+    has_rate = any(t in low for t in _RATE_TOKENS)
+    has_count = any(t in low for t in _COUNT_TOKENS)
+    has_amb = any(t in low for t in _AMBIGUOUS_TOKENS)
+    if has_rate and (has_count or has_amb):
+        return "ambiguous"
+    if has_rate:
+        return "rate"
+    if has_count or has_amb:
+        return "count"
+    return ""
+
+
 # ------------------------------------------------------------- arithmetic ---
+
+# No percentage reaches this magnitude, not even a gross ratio above 100, so a
+# value this large settles an otherwise ambiguous label in favour of counts.
+_COUNT_MAGNITUDE = 1000.0
 
 _TOTAL_EXACT = re.compile(r"^\s*(?:sub\s*-?\s*)?totals?\s*$", re.I)
 # Greedy prefix so "NGO/Faith / Total" splits on the LAST separator, matching
@@ -631,7 +672,13 @@ def _total_targets(labels: Sequence[str]) -> List[Dict[str, Any]]:
 
 
 def check_table_totals(export: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Verify every column or row named Total against the sum of its siblings."""
+    """
+    Verify every column or row named Total against the sum of its siblings.
+
+    Only tables of counts are summed. A rate or percentage table is checked
+    against the range of its parts instead, because a total rate is a weighted
+    mean and adding rates across disjoint categories is meaningless.
+    """
     out: List[Dict[str, Any]] = []
 
     for ctx in iter_questions(export):
@@ -713,16 +760,50 @@ def _compare_total(
             "Percent and count values are never summed together.",
         )]
 
-    # A "Total" in a percentage table is a combined rate, not a sum, so summing
-    # 88% and 86% to check an 87% total would be wrong. Rates are left alone.
-    if parsed_total.is_percent:
-        return []
+    # Whether these figures may be added at all. A percent sign settles it, but a
+    # table headed "rate" is very often filled with bare numbers, so the question
+    # text and both axis labels decide as well. Getting this wrong is expensive:
+    # summing rates across disjoint categories manufactures an arithmetic error
+    # that the assessor never made.
+    expects = _label_expects(" ".join(
+        [ctx.label_blob, _txt(target["label"]), _txt(cross_label)]
+        + [_txt(lbl) for lbl, _ in siblings]
+    ))
+    values = [p.value or 0.0 for _, p in usable]
+    total_value = parsed_total.value or 0.0
 
-    total_sum = sum(p.value or 0.0 for _, p in usable)
-    is_pct = False
-    diff = (parsed_total.value or 0.0) - total_sum
+    if parsed_total.is_percent or expects == "rate":
+        return _check_rate_total(ctx, where, axis, target, cross_label, parsed_total, usable)
+
+    total_sum = sum(values)
+    diff = total_value - total_sum
     if abs(diff) <= 1e-6:
         return []
+
+    # "Enrolment ... or Net Enrolment Rate" style labels genuinely allow either
+    # unit. Figures too large to be a percentage settle it as counts; anything
+    # smaller could be either, so the difference is raised for a human to judge
+    # rather than asserted as an arithmetic error.
+    if expects == "ambiguous" and max(values + [abs(total_value)]) < _COUNT_MAGNITUDE:
+        return [finding(
+            "ARITH_TOTAL_UNRECONCILED", "minor", "arithmetic", where,
+            "The declared total of %s does not equal the sum of its parts, %s, but this label "
+            "allows either counts or rates, so the two cannot be reconciled by script." % (
+                parsed_total.display, _fmt(total_sum)),
+            {
+                "declaredTotal": total_value,
+                "computedSum": total_sum,
+                "difference": diff,
+                "contributors": [[l, p.value] for l, p in usable],
+                "table": ctx.qtext,
+                "axis": axis,
+                "totalLabel": target["label"],
+                "crossLabel": cross_label,
+            },
+            "A label naming both a count and a rate is only summed when a value is too large "
+            "to be a percentage. Otherwise the mismatch is reported for a human to judge, "
+            "never stated as an arithmetic error.",
+        )]
 
     return [finding(
         "ARITH_TOTAL_MISMATCH", "major", "arithmetic", where,
@@ -732,41 +813,65 @@ def _compare_total(
             " too high" if diff > 0 else " too low",
         ),
         {
-            "declaredTotal": parsed_total.value,
+            "declaredTotal": total_value,
             "computedSum": total_sum,
             "difference": diff,
-            "isPercent": is_pct,
             "contributors": [[l, p.value] for l, p in usable],
             "table": ctx.qtext,
             "axis": axis,
             "totalLabel": target["label"],
             "crossLabel": cross_label,
         },
-        "A column or row named Total (or '<group> / Total') must equal the sum of its siblings.",
+        "A column or row named Total (or '<group> / Total') in a table of counts must equal "
+        "the sum of its siblings.",
+    )]
+
+
+def _check_rate_total(
+    ctx: QCtx,
+    where: str,
+    axis: str,
+    target: Dict[str, Any],
+    cross_label: str,
+    parsed_total: ParsedNumber,
+    usable: List[Tuple[str, ParsedNumber]],
+) -> List[Dict[str, Any]]:
+    """
+    Check a total in a rate table the only way its semantics allow.
+
+    A combined rate is a weighted mean of its parts, never their sum, so adding
+    88 and 86 to test a total of 87 would invent an error. The weights (the
+    denominators behind each rate) are not collected by this module, so the
+    figure cannot be recomputed. What does hold whatever the weights are is that
+    a weighted mean lies between the smallest and the largest of its parts, so
+    only that is checked, and only ever as minor.
+    """
+    values = [p.value or 0.0 for _, p in usable]
+    low, high = min(values), max(values)
+    total_value = parsed_total.value or 0.0
+    if low - 1e-6 <= total_value <= high + 1e-6:
+        return []
+
+    return [finding(
+        "ARITH_RATE_TOTAL_OUT_OF_RANGE", "minor", "arithmetic", where,
+        "The combined rate of %s falls outside the range of the rates it combines (%s to %s), "
+        "which a weighted average cannot do." % (parsed_total.display, _fmt(low), _fmt(high)),
+        {
+            "declaredTotal": total_value,
+            "contributorRange": [low, high],
+            "contributors": [[l, p.value] for l, p in usable],
+            "table": ctx.qtext,
+            "axis": axis,
+            "totalLabel": target["label"],
+            "crossLabel": cross_label,
+        },
+        "Percentages and rates across separate categories are never added together. A total "
+        "rate is a weighted mean of its parts, so it is only checked against their range; the "
+        "denominators needed to recompute it are not collected by this module.",
     )]
 
 
 # ------------------------------------------------------- units and values ---
-
-_RATE_TOKENS = ("rate", "percentage", "per cent", "percent", "proportion", "coverage", "attendance")
-_AMBIGUOUS_TOKENS = ("enrolment", "enrollment")
-_COUNT_TOKENS = ("number of", "how many", "no. of", "count of", "total number", "number and type")
-
-
-def _label_expects(blob: str) -> str:
-    """Classify a label as expecting a "rate", a "count", "ambiguous" or ""."""
-    low = blob.lower()
-    has_rate = any(t in low for t in _RATE_TOKENS)
-    has_count = any(t in low for t in _COUNT_TOKENS)
-    has_amb = any(t in low for t in _AMBIGUOUS_TOKENS)
-    if has_rate and (has_count or has_amb):
-        return "ambiguous"
-    if has_rate:
-        return "rate"
-    if has_count or has_amb:
-        return "count"
-    return ""
-
 
 def check_units(export: Dict[str, Any]) -> List[Dict[str, Any]]:
     """

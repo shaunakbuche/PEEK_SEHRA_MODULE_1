@@ -201,8 +201,7 @@ def build_digest(export: Dict[str, Any], skip_blanks: bool = False) -> List[Bloc
             rating = _rating_for(export, ctx.component_id)
             if rating:
                 comp_lines.append("Assessor readiness rating: %s" % rating)
-            blocks.append(_block("component", "\n".join(comp_lines), keep=True,
-                                 label=ctx.component_label))
+            blocks.append(_block("component", "\n".join(comp_lines), label=ctx.component_label))
 
         if ctx.subsection_id != current_sub:
             flush()
@@ -228,7 +227,7 @@ def build_digest(export: Dict[str, Any], skip_blanks: bool = False) -> List[Bloc
             continue
         lines.append("  %s: %s" % (label, val or BLANK_MARK))
     if len(lines) > 2:
-        blocks.append(_block("summary", "\n".join(lines), keep=True, label="final summary"))
+        blocks.append(_block("summary", "\n".join(lines), label="final summary"))
 
     return blocks
 
@@ -262,50 +261,56 @@ def _rating_for(export: Dict[str, Any], component_id: str) -> str:
 
 # ------------------------------------------------------------ truncate -----
 
+# Enough room for the truncation notice below, whose length is bounded.
+_NOTICE_RESERVE = 400
+
+
 def render_digest(blocks: Sequence[Block], max_chars: Optional[int] = None) -> Tuple[str, List[str]]:
     """
     Join blocks into the digest text, dropping whole blocks from the end when a
     character budget is set. Returns (text, omitted block labels).
+
+    Truncation is strictly sequential, so what remains always reads in document
+    order, and a component heading is never left dangling with no content under
+    it. The result is guaranteed not to exceed max_chars.
     """
     parts = [_txt(b.get("text")) for b in blocks]
     full = "\n".join(parts)
     if not max_chars or len(full) <= max_chars:
         return full, []
 
-    notice_room = 220
-    budget = max(0, max_chars - notice_room)
-    kept: List[str] = []
-    omitted: List[str] = []
+    budget = max(0, max_chars - _NOTICE_RESERVE)
+    kept_idx: List[int] = []
     used = 0
-    stopped = False
-
-    for b in blocks:
-        text = _txt(b.get("text"))
+    for i, text in enumerate(parts):
         cost = len(text) + 1
-        label = _txt(b.get("label")) or _txt(b.get("kind"))
-        if stopped and not b.get("keep"):
-            omitted.append(label)
-            continue
-        if used + cost > budget:
-            if b.get("keep") and used + cost <= max_chars:
-                kept.append(text)
-                used += cost
-                continue
-            stopped = True
-            omitted.append(label)
-            continue
-        kept.append(text)
-        used += cost
+        if i == 0 or used + cost <= budget:  # the header always stays
+            kept_idx.append(i)
+            used += cost
+        else:
+            break
 
+    while len(kept_idx) > 1 and _txt(blocks[kept_idx[-1]].get("kind")) == "component":
+        kept_idx.pop()
+
+    keep_set = set(kept_idx)
+    omitted = [
+        _txt(blocks[i].get("label")) or _txt(blocks[i].get("kind"))
+        for i in range(len(blocks)) if i not in keep_set
+    ]
+
+    listed = ", ".join(omitted)
+    if len(listed) > 180:
+        listed = listed[:177] + "..."
     notice = [
         "",
         "---",
         "NOTE: this digest was truncated to fit a %d character budget." % max_chars,
-        "%d section(s) were omitted in full: %s" % (
-            len(omitted), ", ".join(omitted[:12]) + ("..." if len(omitted) > 12 else "")),
+        "%d section(s) were omitted in full: %s" % (len(omitted), listed),
         "Request the omitted sections separately before drawing conclusions about them.",
     ]
-    return "\n".join(kept + notice), omitted
+    text = "\n".join([parts[i] for i in kept_idx] + notice)
+    return text[:max_chars], omitted
 
 
 # ---------------------------------------------------------------- main -----

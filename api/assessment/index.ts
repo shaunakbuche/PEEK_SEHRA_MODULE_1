@@ -12,7 +12,12 @@ import {
   serializeSlots,
   normalizeExtraction,
 } from "../_lib/extractSkill.js";
-import { COMPLETENESS_MODEL, COMPLETENESS_SYSTEM, buildCompletenessDigest } from "../_lib/completenessSkill.js";
+import {
+  COMPLETENESS_MODEL,
+  COMPLETENESS_SYSTEM,
+  buildCompletenessDigest,
+  parseSkillCompleteness,
+} from "../_lib/completenessSkill.js";
 import { CompletenessSchema } from "../../src/lib/completenessTypes.js";
 
 async function getOrCreateForOrg(orgId: string) {
@@ -123,6 +128,32 @@ async function runCompletenessReview(req: VercelRequest, res: VercelResponse) {
   res.status(200).json({ review, model: COMPLETENESS_MODEL });
 }
 
+/**
+ * The same step 1 review, imported rather than generated: the school or admin
+ * runs the SEHRA analysis skill in Claude Enterprise and pastes the review JSON
+ * back. This is the path that works with no ANTHROPIC_API_KEY, so it needs no
+ * model, no rate limit and no assessment lookup. Nothing is stored: the review
+ * is validated and handed straight back for rendering, exactly like the
+ * generated one.
+ */
+async function importCompletenessReview(req: VercelRequest, res: VercelResponse) {
+  await requireAuth(req);
+
+  const pasted = (body(req) as any).review;
+  if (pasted === undefined || pasted === null || (typeof pasted === "string" && !pasted.trim())) {
+    throw new ApiError(400, "Paste the completeness review JSON produced by the SEHRA analysis skill.");
+  }
+
+  let review;
+  try {
+    review = parseSkillCompleteness(pasted);
+  } catch (e: any) {
+    throw new ApiError(400, e?.message || "The completeness review JSON could not be read.");
+  }
+
+  res.status(200).json({ review, model: "skill:sehra-analysis" });
+}
+
 export default route({
   /** School: own assessment. Admin: ?orgId=<uuid>. Includes the report when visible. */
   GET: async (req, res) => {
@@ -195,9 +226,9 @@ export default route({
   POST: async (req, res) => {
     // The completeness review (school or admin) shares this endpoint to stay
     // within the serverless-function cap; it is selected by an action field.
-    if ((body(req) as any)?.action === "completeness") {
-      return runCompletenessReview(req, res);
-    }
+    const action = (body(req) as any)?.action;
+    if (action === "completeness") return runCompletenessReview(req, res);
+    if (action === "completeness-import") return importCompletenessReview(req, res);
 
     // Otherwise: document scanning (school only).
     const session = await requireAuth(req, "school");
