@@ -1,0 +1,642 @@
+{
+  "sehraExport": {
+    "version": "1.0",
+    "exportedAt": "2026-05-14T09:12:44.000Z",
+    "tool": "SEHRA Scoping Module (Module 1)",
+    "organisation": {
+      "name": "Peek Vision / Makueni County Eye Health Team",
+      "country": "Kenya",
+      "region": "Eastern",
+      "district": "Makueni",
+      "assessmentDate": "2026-05-06"
+    },
+    "assessment": {
+      "id": "asmt_9f2c41",
+      "status": "submitted",
+      "submittedAt": "2026-05-13T16:40:02.000Z",
+      "updatedAt": "2026-05-14T08:55:10.000Z"
+    },
+    "completion": {
+      "totalFields": 118,
+      "answeredFields": 94,
+      "percent": 80,
+      "byComponent": [
+        { "id": "context", "title": "Context", "total": 62, "answered": 48, "percent": 77 },
+        { "id": "c1", "title": "Sectoral Legislation, Policy and Strategy", "total": 17, "answered": 14, "percent": 82 },
+        { "id": "c2", "title": "Institutional and Service Delivery Environment", "total": 33, "answered": 28, "percent": 85 },
+        { "id": "c4", "title": "Supply Chain", "total": 6, "answered": 4, "percent": 67 }
+      ]
+    },
+    "components": [
+      {
+        "id": "context",
+        "number": "C",
+        "title": "Context",
+        "purpose": "An overview of the implementation area and the status of any existing school eye health programme.",
+        "readinessRating": { "value": null, "label": null },
+        "subsections": [
+          {
+            "id": "c.1",
+            "title": "Population & demographics",
+            "themes": ["Data Limitations"],
+            "questions": [
+              {
+                "id": "ctx_pop",
+                "type": "field",
+                "text": "Total population",
+                "help": "",
+                "answer": "1,012,600",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_children",
+                "type": "table",
+                "text": "Number of children in the following age groups",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["1 – 4 years", "5 – 9 years", "10 – 14 years", "15 – 19 years"],
+                  "rows": ["Number of children"],
+                  "cells": [["118,400", "126,900", "121,300", "108,700"]]
+                },
+                "reflections": null
+              },
+              {
+                "id": "ctx_schools",
+                "type": "table",
+                "text": "Number of schools by level and school type",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["Pre-Primary", "Primary", "Middle Secondary", "Secondary", "Higher Secondary", "Total"],
+                  "rows": ["Public", "Private", "NGO or Faith-based"],
+                  "cells": [
+                    ["120", "412", "96", "54", "12", "700"],
+                    ["45", "118", "30", "22", "6", "221"],
+                    ["18", "64", "15", "9", "3", "109"]
+                  ]
+                },
+                "reflections": null
+              },
+              {
+                "id": "ctx_enrol",
+                "type": "table",
+                "text": "School enrolment by school type and gender (or Net Enrolment Rate)",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": [
+                    "Public / M", "Public / F", "Public / Total",
+                    "NGO/Faith / M", "NGO/Faith / F", "NGO/Faith / Total",
+                    "Private / M", "Private / F", "Private / Total"
+                  ],
+                  "rows": ["Enrolment"],
+                  "cells": [[
+                    "22,100", "21,400", "43,500",
+                    "1,900", "1,850", "3,750",
+                    "3,400", "3,300", "6,700"
+                  ]]
+                },
+                "reflections": null
+              },
+              {
+                "id": "ctx_attend",
+                "type": "table",
+                "text": "School attendance rate by school type and gender",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": [
+                    "Public / M", "Public / F", "Public / Total",
+                    "NGO/Faith / M", "NGO/Faith / F", "NGO/Faith / Total",
+                    "Private / M", "Private / F", "Private / Total"
+                  ],
+                  "rows": ["Attendance"],
+                  "cells": [[
+                    "88%", "86%", "41,230",
+                    "84%", "83%", "83%",
+                    "91%", "90%", "90%"
+                  ]]
+                },
+                "reflections": null
+              },
+              {
+                "id": "ctx_ethnic",
+                "type": "text",
+                "text": "Primary ethnic groups (please list)",
+                "help": "",
+                "answer": "Kamba majority, with Maasai and Kikuyu minorities in the southern wards.",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "c.2",
+            "title": "Existing school eye health programme",
+            "themes": ["Policy & Integration", "Human Resources"],
+            "questions": [
+              {
+                "id": "ctx_seh_prog",
+                "type": "yn",
+                "text": "Are there any standalone school eye health programmes or initiatives within the intervention area?",
+                "help": "Who is the implementer (MoH, MoE, NGO)? Who is the funder? Scope: location/area, type of schools, classes/grades screened, age range.",
+                "answer": "Yes",
+                "remarks": "A school eye health initiative runs in 24 primary schools in the northern wards, implemented by an NGO partner under Ministry of Health oversight and funded by an international donor. Screening is carried out by trained teachers, with referral to the county hospital eye unit.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_teacher_curr",
+                "type": "yn",
+                "text": "Does a curriculum for teacher training exist for school health and/or eye health?",
+                "help": "Pre-service or in-service? Scope & content? Teaching/learning materials?",
+                "answer": "No",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_teachers_trained",
+                "type": "text",
+                "text": "How many teachers have been trained on school health or school eye health in the intervention area?",
+                "help": "",
+                "answer": "1,240 teachers trained across the county in 2023 and",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "c.3",
+            "title": "Prevalence & service availability",
+            "themes": ["Accessibility & Disability", "Data Limitations"],
+            "questions": [
+              {
+                "id": "ctx_prev",
+                "type": "table",
+                "text": "Prevalence of refractive errors in children of school-going age",
+                "help": "Use published studies or programme data if available. Leave blank if unknown and list your sources below.",
+                "answer": null,
+                "remarks": null,
+                "blank": true,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["Myopia", "Hypermetropia", "Astigmatism", "Specialised / complex refraction"],
+                  "rows": ["Males and females", "Males", "Females"],
+                  "cells": [["", "", "", ""], ["", "", "", ""], ["", "", "", ""]]
+                },
+                "reflections": null
+              },
+              {
+                "id": "ctx_prev_ref",
+                "type": "text",
+                "text": "References (please list and provide a web link if available)",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": true,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_drops",
+                "type": "group",
+                "text": "Are eye drops or eye ointment available at the following levels?",
+                "help": "",
+                "answer": null,
+                "remarks": "Stock-outs of chloramphenicol were reported at two sub-county facilities during the last quarter.",
+                "blank": false,
+                "options": null,
+                "items": [
+                  { "label": "School nurse", "answer": "No" },
+                  { "label": "Community health level", "answer": "No" },
+                  { "label": "Primary health level", "answer": "Yes" },
+                  { "label": "Secondary health level", "answer": "Yes" },
+                  { "label": "Tertiary health level", "answer": "Yes" },
+                  { "label": "Private pharmacies", "answer": "Yes" }
+                ],
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_referral",
+                "type": "yn",
+                "text": "Does a referral pathway exist for school health / school eye health?",
+                "help": "If 'Yes', please describe.",
+                "answer": "Yes",
+                "remarks": "Children identified at school are referred to the sub-county health centre and onward to the county hospital eye unit. Paper referral slips are issued by the head teacher.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "ctx_nhi",
+                "type": "yn",
+                "text": "Coverage of children for eye health in National Health Insurance",
+                "help": "For example, whether a national insurance scheme pays for children's eye tests or spectacles.",
+                "answer": "No",
+                "remarks": "The national scheme reimburses consultation and treatment for enrolled households, but spectacles and low vision devices are excluded from the benefit package.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c1",
+        "number": 1,
+        "title": "Sectoral Legislation, Policy and Strategy",
+        "purpose": "To ascertain the degree to which the sectoral policy and strategy environment is conducive for a school eye health programme.",
+        "readinessRating": { "value": 3, "label": "Good Possibilities" },
+        "subsections": [
+          {
+            "id": "1.2",
+            "title": "Policies, Sector Strategies and Plans",
+            "themes": ["Policy & Integration"],
+            "questions": [
+              {
+                "id": "c1_natedu",
+                "type": "yn",
+                "text": "Is school health / school eye health included in the National Education Policy?",
+                "help": "",
+                "answer": "No policy exists",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No policy exists"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c1_dedicated",
+                "type": "yn",
+                "text": "Is there a dedicated school health policy or plan?",
+                "help": "If 'Yes', does it include school eye health?",
+                "answer": "Yes",
+                "remarks": "The National School Health Policy was adopted in 2019 and includes a short section on vision screening and referral.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c1_eyepolicy",
+                "type": "yn",
+                "text": "Is school health included in the Eye Health Policy or Strategic Plan?",
+                "help": "",
+                "answer": "Yes",
+                "remarks": "The National Eye Health Strategic Plan 2020-2025 names school eye health as a priority area.",
+                "blank": false,
+                "options": ["Yes", "No Eye Health Policy exists"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c1_notes",
+                "type": "text",
+                "text": "Any additional notes (200 words maximum)",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": true,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "1.3",
+            "title": "Finance",
+            "themes": ["Funding & Resources", "Cost & Affordability"],
+            "questions": [
+              {
+                "id": "c1_budget_sh",
+                "type": "yn",
+                "text": "Is there an allocated budget for school health / school eye health?",
+                "help": "Which ministry / ministries? What is the annual public expenditure?",
+                "answer": "Yes",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c1_budget_eye",
+                "type": "yn",
+                "text": "Is there an allocated budget for eye health?",
+                "help": "Which ministry / ministries? What is the annual public expenditure?",
+                "answer": "No",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c1_health_fin",
+                "type": "text",
+                "text": "What are the major health financing mechanisms?",
+                "help": "",
+                "answer": "County health allocation from the national equitable share, the national health insurance fund, and out-of-pocket payment at facility level.",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c2",
+        "number": 2,
+        "title": "Institutional and Service Delivery Environment",
+        "purpose": "To describe the situation in the proposed intervention area.",
+        "readinessRating": { "value": 2, "label": "Some Possibilities" },
+        "subsections": [
+          {
+            "id": "2.1",
+            "title": "Stakeholders",
+            "themes": ["Policy & Integration"],
+            "questions": [
+              {
+                "id": "c2_coord",
+                "type": "yn",
+                "text": "Is there a coordination mechanism for school health / school eye health within the intervention area?",
+                "help": "If yes, please describe the mechanism.",
+                "answer": "Yes",
+                "remarks": "There is no functional coordination mechanism at county level. The school health technical working group has not met since 2022 and no secretariat is in place.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "2.2",
+            "title": "Infrastructure",
+            "themes": ["Accessibility & Disability"],
+            "questions": [
+              {
+                "id": "c2_inf_edu",
+                "type": "table",
+                "text": "Education Sector Infrastructure / Number of Facilities",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["Pre-Primary", "Primary", "Middle Secondary", "Secondary"],
+                  "rows": ["Public Sector", "NGO", "Private", "Charity", "Faith-based"],
+                  "cells": [
+                    ["120", "389", "96", "54"],
+                    ["8", "29", "7", "4"],
+                    ["45", "118", "30", "22"],
+                    ["4", "12", "3", "2"],
+                    ["10", "35", "8", "5"]
+                  ]
+                },
+                "reflections": null
+              },
+              {
+                "id": "c2_inf_health",
+                "type": "table",
+                "text": "Health Sector Infrastructure / Number of Facilities",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": {
+                  "cols": ["Community HC", "Primary HC", "Secondary HC", "Tertiary HC"],
+                  "rows": ["Public Sector", "NGO", "Private", "Charity", "Faith-based"],
+                  "cells": [
+                    ["78%", "64", "9", "1"],
+                    ["6", "5", "1", "0"],
+                    ["12", "18", "3", "0"],
+                    ["2", "3", "1", "0"],
+                    ["7", "9", "2", "0"]
+                  ]
+                },
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "2.8",
+            "title": "Data",
+            "themes": ["Data Limitations"],
+            "questions": [
+              {
+                "id": "c2_emis",
+                "type": "yn",
+                "text": "Are there indicators related to the health of children within the EMIS?",
+                "help": "EMIS is the education sector's routine data system.",
+                "answer": "Yes",
+                "remarks": "The EMIS captures enrolment, attendance and deworming coverage. Vision indicators are absent from the current return.",
+                "blank": false,
+                "options": ["Yes", "No", "This does not exist"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c2_datashare",
+                "type": "yn",
+                "text": "Is there coordination or data sharing between education and health authorities on school children's health?",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": true,
+                "options": ["Yes", "No", "This does not exist"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c2_me",
+                "type": "yn",
+                "text": "Does a monitoring, evaluation and/or supportive supervision framework exist in the intervention area?",
+                "help": "",
+                "answer": "This does not exist",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No", "This does not exist"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          },
+          {
+            "id": "2.9",
+            "title": "Reflections and Implications",
+            "questions": [
+              {
+                "id": "c2",
+                "type": "reflections",
+                "text": "Reflections and implications",
+                "help": "",
+                "answer": null,
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": {
+                  "challenges": [
+                    "No functioning intersectoral coordination forum between health and education.",
+                    "Referral completion is not tracked once a child leaves the school gate."
+                  ],
+                  "supports": [
+                    "A county eye unit with two refractionists is already operating at the referral hospital.",
+                    "Head teachers are receptive and an NGO partner is present in the northern wards."
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c4",
+        "number": 4,
+        "title": "Supply Chain",
+        "purpose": "To describe the availability and flow of glasses, consumables and equipment required in a school eye health programme.",
+        "readinessRating": { "value": 2, "label": "Some Possibilities" },
+        "subsections": [
+          {
+            "id": "4.5",
+            "title": "Capacity to pay",
+            "themes": ["Cost & Affordability", "Funding & Resources"],
+            "questions": [
+              {
+                "id": "c4_minwage",
+                "type": "field",
+                "text": "What is the minimum wage in local currency?",
+                "help": "A reference point for judging whether spectacle prices are affordable locally.",
+                "answer": "15,201 KES per month",
+                "remarks": null,
+                "blank": false,
+                "options": null,
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c4_wtp",
+                "type": "yn",
+                "text": "Information on willingness or capacity to pay for eyeglasses?",
+                "help": "What is the capacity to pay?",
+                "answer": "No",
+                "remarks": null,
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              },
+              {
+                "id": "c4_ins_glasses",
+                "type": "yn",
+                "text": "Does insurance / government mechanism cover the cost of eyeglasses?",
+                "help": "Coverage for adults? Coverage for school-age children?",
+                "answer": "No",
+                "remarks": "Spectacles are not reimbursed under any public scheme. Families pay out of pocket at private optical outlets.",
+                "blank": false,
+                "options": ["Yes", "No"],
+                "items": null,
+                "table": null,
+                "reflections": null
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "summaryExtras": {
+      "sum_gaps": "",
+      "sum_groups": "Parent-teacher associations are active in most public primary schools and meet termly.",
+      "sum_unserved": "Children in the six southern wards and children in non-formal settlements receive no school-based eye screening."
+    },
+    "rawAnswers": {
+      "meta_country": "Kenya",
+      "meta_province": "Eastern",
+      "meta_district": "Makueni",
+      "meta_date": "2026-05-06",
+      "ctx_pop": "1,012,600",
+      "ctx_schools__0_1": "412",
+      "ctx_schools__0_5": "700",
+      "ctx_attend__0_2": "41,230",
+      "ctx_teachers_trained": "1,240 teachers trained across the county in 2023 and",
+      "c1_budget_sh__yn": "Yes",
+      "c1_budget_sh__rem": "",
+      "c2_coord__yn": "Yes",
+      "c2_coord__rem": "There is no functional coordination mechanism at county level. The school health technical working group has not met since 2022 and no secretariat is in place.",
+      "c2_inf_edu__0_1": "389",
+      "c2_inf_health__0_0": "78%",
+      "c2_datashare__yn": "",
+      "c4_wtp__yn": "No",
+      "sum_gaps": ""
+    }
+  }
+}

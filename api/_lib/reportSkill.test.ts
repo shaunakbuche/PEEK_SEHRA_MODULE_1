@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractJson, buildAssessmentDigest } from "./reportSkill.js";
+import { extractJson, buildAssessmentDigest, parseSkillReport } from "./reportSkill.js";
 
 describe("extractJson", () => {
   it("parses a raw JSON object", () => {
@@ -50,5 +50,90 @@ describe("buildAssessmentDigest", () => {
   it("includes the assessor's chosen indicator level for a component when set", () => {
     const digest = buildAssessmentDigest({ c1__scale: "3" }, org);
     expect(digest).toContain("Good Possibilities");
+  });
+});
+
+describe("parseSkillReport", () => {
+  const skillReport = () => ({
+    title: "SEHRA Module 1 — Makueni",
+    executiveSummary: "A short summary of feasibility.",
+    background: "Background and method.",
+    contextSnapshot: "Context.",
+    dataQualityNote: "",
+    components: [
+      {
+        name: "Sectoral Legislation, Policy and Strategy",
+        summary: "Component summary.",
+        enablers: [{ theme: "Policy", points: ["An enabler"] }],
+        barriers: [{ theme: "Financing", points: ["A barrier"] }],
+        crossCutting: "Interactions.",
+        actionPoints: [{ theme: "Financing", points: ["Do this"] }],
+        rag: "Amber/Green",
+        ragSummary: "Moderately high.",
+      },
+    ],
+    overall: {
+      feasibility: "Feasible with mitigation.",
+      strategyImplications: "Strategy.",
+      policyAdvocacy: "Advocacy.",
+      nextSteps: "Next steps.",
+      rag: "Amber",
+      ragInterpretation: "Interpretation.",
+    },
+    topActions: ["Do this first."],
+  });
+
+  it("accepts a well-formed skill report", () => {
+    const out = parseSkillReport(skillReport());
+    expect(out.title).toBe("SEHRA Module 1 — Makueni");
+    expect(out.components).toHaveLength(1);
+    expect(out.overall.rag).toBe("Amber");
+  });
+
+  it("accepts the report as a JSON string", () => {
+    expect(parseSkillReport(JSON.stringify(skillReport())).title).toBe("SEHRA Module 1 — Makueni");
+  });
+
+  it("unwraps a { content } or { report: { content } } envelope", () => {
+    expect(parseSkillReport({ content: skillReport() }).title).toBe("SEHRA Module 1 — Makueni");
+    expect(parseSkillReport({ report: { content: skillReport() } }).title).toBe("SEHRA Module 1 — Makueni");
+  });
+
+  it("fills safe defaults for optional fields the skill left out", () => {
+    const partial: any = skillReport();
+    delete partial.dataQualityNote;
+    delete partial.background;
+    const out = parseSkillReport(partial);
+    expect(out.dataQualityNote).toBe("");
+    expect(out.background).toBe("");
+  });
+
+  it("normalises an odd RAG value rather than failing", () => {
+    const odd: any = skillReport();
+    odd.overall.rag = "amber/green";
+    expect(parseSkillReport(odd).overall.rag).toBe("Amber/Green");
+  });
+
+  it("rejects a SEHRA export pasted in by mistake", () => {
+    expect(() => parseSkillReport({ sehraExport: { version: "1.0" } })).toThrow(/not a report/i);
+  });
+
+  it("rejects a non-object payload", () => {
+    expect(() => parseSkillReport([1, 2, 3])).toThrow(/JSON object/i);
+    expect(() => parseSkillReport("not json at all")).toThrow(/not valid JSON/i);
+    expect(() => parseSkillReport(null)).toThrow(/JSON object/i);
+  });
+
+  it("names the fields that are missing", () => {
+    const bad: any = skillReport();
+    bad.title = "";
+    bad.components = [];
+    expect(() => parseSkillReport(bad)).toThrow(/title, components/);
+  });
+
+  it("points at a component that has no name", () => {
+    const bad: any = skillReport();
+    bad.components[0].name = "";
+    expect(() => parseSkillReport(bad)).toThrow(/Component 1 has no "name"/);
   });
 });

@@ -1,4 +1,5 @@
 import { ASSESS, SCALE_KEY, THEMES, type Question } from "../../src/data/sehra.js";
+import { ReportContentSchema, normalizeReportContent, type ReportContent } from "../../src/lib/reportTypes.js";
 
 /**
  * The "report-writer skill": the system prompt that turns a completed SEHRA
@@ -169,6 +170,58 @@ export function buildAssessmentDigest(answers: Record<string, string>, org: {
       `Derive your own context-appropriate themes from the evidence rather than mechanically applying this list.`
   );
   return lines.join("\n");
+}
+
+/**
+ * Validate a report pasted back in from the analysis skill. Tolerates the
+ * common near-misses (a `{ content }` or `{ report: { content } }` wrapper, a
+ * JSON string, slightly off-shape fields) by coercing with
+ * normalizeReportContent, and throws a message the admin can act on when the
+ * payload is not a synthesis report at all.
+ */
+export function parseSkillReport(raw: unknown): ReportContent {
+  let candidate: any = raw;
+
+  if (typeof candidate === "string") {
+    try {
+      candidate = JSON.parse(candidate);
+    } catch {
+      throw new Error("That is not valid JSON. Paste the whole object the skill produced, starting with { and ending with }.");
+    }
+  }
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    throw new Error("Expected a JSON object containing the report. Paste the whole object the skill produced.");
+  }
+  if (candidate.sehraExport) {
+    throw new Error("That is a SEHRA export (the assessment sent TO the skill), not a report. Paste the synthesis JSON the skill produced.");
+  }
+  if (candidate.report?.content) candidate = candidate.report.content;
+  else if (candidate.content && !candidate.components) candidate = candidate.content;
+
+  const content = normalizeReportContent(candidate);
+
+  const missing: string[] = [];
+  if (!content.title.trim()) missing.push("title");
+  if (!content.executiveSummary.trim()) missing.push("executiveSummary");
+  if (!content.components.length) missing.push("components");
+  if (missing.length) {
+    throw new Error(
+      `The report JSON is missing: ${missing.join(", ")}. Paste the synthesis output, the object with title, executiveSummary, components and overall.`
+    );
+  }
+
+  const unnamed = content.components.findIndex((c) => !c.name.trim());
+  if (unnamed !== -1) {
+    throw new Error(`Component ${unnamed + 1} has no "name". Every entry in components needs a name.`);
+  }
+
+  const parsed = ReportContentSchema.safeParse(content);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const where = issue?.path.join(".") || "the report";
+    throw new Error(`The report JSON does not match the expected shape (${where}: ${issue?.message ?? "invalid"}).`);
+  }
+  return parsed.data;
 }
 
 /** Extract the JSON object from a model response, tolerating stray fences. */

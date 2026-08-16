@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Archive, ArrowLeft, CheckCircle2, ClipboardList, Download, Eye, Loader2, MessageCircle, Plus, RefreshCw,
-  Search, Send, Sparkles, Trash2, Undo2, X,
+  Search, Send, Sparkles, Trash2, Undo2, Upload, X,
 } from "lucide-react";
 import { api, type AssessmentPayload, type AssessmentStatus, type OrgRow } from "@/lib/api";
 import type { ReportContent, ThemeGroup } from "@/lib/reportTypes";
 import { RAG_LEVELS, normalizeReportContent } from "@/lib/reportTypes";
+import { buildSehraExport, downloadSehraExport, sehraExportFilename } from "@/lib/sehraExport";
 import { ASSESS, SCALE_KEY, type Question } from "@/data/sehra";
 import { TopBar, StatusPill, STATUS_META } from "@/components/brand";
 import { ReportView } from "@/components/ReportView";
@@ -546,6 +547,72 @@ function ReportEditor({ reportId, initial, onPublished }: {
 }
 
 /* ------------------------------------------------------------------ */
+/* Import a report from the analysis skill                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Paste back the JSON the SEHRA analysis skill produced in Claude Enterprise.
+ * The JSON is parsed here for an immediate syntax error, then validated on the
+ * server against the report schema. onImport resolves with "" on success or
+ * with the message to show in the dialog.
+ */
+function ImportReportModal({ open, onClose, onImport, busy }: {
+  open: boolean; onClose: () => void; onImport: (content: unknown) => Promise<string>; busy: boolean;
+}) {
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let content: unknown;
+    try {
+      content = JSON.parse(text);
+    } catch (err: any) {
+      setError(`That is not valid JSON. ${err.message}`);
+      return;
+    }
+    setError("");
+    const failure = await onImport(content);
+    if (failure) setError(failure);
+    else setText("");
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} labelledBy="import-report-title" maxWidth="max-w-2xl">
+      <form onSubmit={submit}>
+        <div className="flex items-start justify-between">
+          <h3 id="import-report-title" className="font-serif text-2xl">Import report JSON</h3>
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted-foreground hover:bg-secondary"><X className="h-4 w-4" /></button>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Paste the synthesis JSON produced by the SEHRA analysis skill. It becomes this organization's draft
+          report, ready to review, edit and publish. Any existing draft is replaced.
+        </p>
+        <label className="mt-4 block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">Report JSON</span>
+          <textarea
+            value={text} onChange={(e) => setText(e.target.value)} rows={14} spellCheck={false}
+            placeholder={'{\n  "title": "...",\n  "executiveSummary": "...",\n  "components": [ ... ],\n  "overall": { ... },\n  "topActions": [ ... ]\n}'}
+            className="w-full resize-y rounded-lg border border-input bg-card px-3 py-2 font-mono text-xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+          />
+        </label>
+        <div role="status" aria-live="polite">
+          {error && <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
+        </div>
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary">Cancel</button>
+          <button type="submit" disabled={busy || !text.trim()}
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-600 disabled:opacity-60">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {busy ? "Importing…" : "Import report"}
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Org detail                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -592,6 +659,8 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
   const [payload, setPayload] = useState<AssessmentPayload | null>(null);
   const [tab, setTab] = useState<"answers" | "questionnaire" | "report" | "messages">("answers");
   const [genBusy, setGenBusy] = useState<"" | "ai" | "template">("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [importBusy, setImportBusy] = useState(false);
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [archiveBusy, setArchiveBusy] = useState(false);
@@ -628,6 +697,30 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
           : "Report assembled from the school's answers. Review and edit before publishing."
       );
     } catch (e: any) { setError(e.message); toast.push("error", e.message); } finally { setGenBusy(""); }
+  };
+
+  /** Download the canonical export the analysis skill consumes. */
+  const exportJson = () => {
+    if (!payload) return;
+    const doc = buildSehraExport(payload.assessment.answers, org, payload.assessment);
+    downloadSehraExport(doc);
+    toast.push("success", `Downloaded ${sehraExportFilename(doc)}.`);
+  };
+
+  const importReport = async (content: unknown): Promise<string> => {
+    if (!payload) return "No assessment loaded yet.";
+    setImportBusy(true); setError("");
+    try {
+      await api.post("/api/admin/reports/generate", { assessmentId: payload.assessment.id, mode: "import", content });
+      await load();
+      setTab("report");
+      onChanged();
+      setImportOpen(false);
+      toast.push("success", "Report imported. Review and edit before publishing.");
+      return "";
+    } catch (e: any) {
+      return e.message;
+    } finally { setImportBusy(false); }
   };
 
   const returnToSchool = async (note: string) => {
@@ -729,7 +822,12 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
                   : (<><MessageCircle className="h-3.5 w-3.5" /> Messages</>)}
               </button>
             ))}
-            <div className="ml-auto flex items-center gap-2 pb-2">
+            <div className="ml-auto flex flex-wrap items-center gap-2 pb-2">
+              <button onClick={exportJson}
+                title="Download the canonical JSON export for the SEHRA analysis skill"
+                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary">
+                <Download className="h-3.5 w-3.5" /> Export JSON
+              </button>
               <CompletenessCheck
                 orgId={org.id}
                 className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary"
@@ -742,6 +840,11 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
               )}
               {a.status !== "draft" && (
                 <>
+                  <button onClick={() => setImportOpen(true)} disabled={importBusy}
+                    title="Paste the report JSON produced by the SEHRA analysis skill"
+                    className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50">
+                    <Upload className="h-3.5 w-3.5" /> Import report JSON
+                  </button>
                   <button onClick={() => generate("template")} disabled={!!genBusy}
                     className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50">
                     {genBusy === "template" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="h-3.5 w-3.5" />}
@@ -806,7 +909,7 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
                 <p className="mt-3 text-muted-foreground">
                   {a.status === "draft"
                     ? "Waiting for the school to submit before a report can be generated."
-                    : "No report yet. Generate a first draft with AI, then edit and approve it."}
+                    : "No report yet. Import the JSON from the SEHRA analysis skill, or generate a first draft here, then edit and approve it."}
                 </p>
               </div>
             )
@@ -819,6 +922,7 @@ function OrgDetail({ org, onBack, onChanged }: { org: OrgRow; onBack: () => void
           )}
         </>
       )}
+      <ImportReportModal open={importOpen} onClose={() => setImportOpen(false)} onImport={importReport} busy={importBusy} />
       <ReturnModal open={returnOpen} onClose={() => setReturnOpen(false)} onConfirm={returnToSchool} busy={returnBusy} />
       <DeleteOrgModal org={org} open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={deleteOrg} busy={deleteBusy} />
     </div>

@@ -3,13 +3,19 @@ import { z } from "zod";
 import { route, body, ApiError } from "../../_lib/http.js";
 import { requireAuth } from "../../_lib/auth.js";
 import { qOne } from "../../_lib/db.js";
-import { REPORT_MODEL, REPORT_SKILL_SYSTEM, buildAssessmentDigest, extractJson } from "../../_lib/reportSkill.js";
+import { REPORT_MODEL, REPORT_SKILL_SYSTEM, buildAssessmentDigest, extractJson, parseSkillReport } from "../../_lib/reportSkill.js";
 import { buildTemplateReport } from "../../_lib/reportTemplate.js";
 import { ReportContentSchema } from "../../../src/lib/reportTypes.js";
 
+/**
+ * Three ways a report gets made: drafted by the hosted AI, assembled from the
+ * answers with no model at all, or imported as JSON from the SEHRA analysis
+ * skill run inside Claude Enterprise. All three land in the same row.
+ */
 const GenBody = z.object({
   assessmentId: z.string().uuid(),
-  mode: z.enum(["ai", "template"]).default("ai"),
+  mode: z.enum(["ai", "template", "import"]).default("ai"),
+  content: z.unknown().optional(),
 });
 
 /** Naive per-instance rate limit so a stuck button can't burn API credit. */
@@ -22,6 +28,10 @@ export default route({
     const parsed = GenBody.safeParse(body(req));
     if (!parsed.success) throw new ApiError(400, "assessmentId (uuid) is required");
     const { assessmentId, mode } = parsed.data;
+
+    if (mode === "import" && parsed.data.content === undefined) {
+      throw new ApiError(400, "Paste the report JSON produced by the analysis skill.");
+    }
 
     if (mode === "ai" && !process.env.ANTHROPIC_API_KEY) {
       throw new ApiError(500, "AI report generation unavailable. Set ANTHROPIC_API_KEY in Vercel environment variables, or generate from answers instead (no key needed).");
@@ -42,7 +52,14 @@ export default route({
     let content;
     let aiModel = "";
 
-    if (mode === "template") {
+    if (mode === "import") {
+      try {
+        content = parseSkillReport(parsed.data.content);
+      } catch (e: any) {
+        throw new ApiError(400, e?.message || "The report JSON could not be read.");
+      }
+      aiModel = "skill:sehra-analysis";
+    } else if (mode === "template") {
       content = buildTemplateReport(row.answers || {}, orgMeta);
     } else {
       const last = lastRun.get(session.uid) ?? 0;
