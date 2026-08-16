@@ -148,7 +148,7 @@ normally. Below that either reading is possible, so a difference is raised as
 `ARITH_TOTAL_UNRECONCILED` for a human to judge rather than asserted as an arithmetic error.
 
 **Number parsing** tolerates thousands separators (`41,230`, `12 340`), percent signs, currency
-and trailing prose (`15,201 KES per month`). It flags values that look truncated (a trailing
+and trailing prose (`15,201 <currency> per month`). It flags values that look truncated (a trailing
 comma, slash, dash or dangling conjunction), values that are ranges, and placeholders such as
 `TBC` or `N/A`.
 
