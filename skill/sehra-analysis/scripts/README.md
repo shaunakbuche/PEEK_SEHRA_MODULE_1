@@ -255,3 +255,37 @@ faster from confident false positives than from a missed minor issue.
 
 Every finding carries the `rule` that fired, so a human reviewer can always see why something
 was raised and overrule it.
+
+## compare_runs.py
+
+Stage 3 of the blind double-extraction protocol (see
+`../reference/double-extraction.md`). Compares two independent synthesis runs of
+the same assessment and reports, deterministically, where they agree.
+
+```bash
+python3 compare_runs.py run-A.json run-B.json
+python3 compare_runs.py run-A.json run-B.json --json
+```
+
+Both arguments are report JSON in the `ReportContentSchema` shape. A file that
+wraps the report, for example `{"content": {...}}`, is unwrapped automatically.
+
+What it reports:
+
+- **RAG agreement** per component and overall, on the ordered scale
+  Green > Amber/Green > Amber > Red/Amber > Red. A one-level gap is `adjacent`;
+  two or more levels is `divergent` and is escalated for human adjudication.
+- **Coverage overlap** for enablers, barriers and action points: how many points
+  appear in both runs and how many in only one. Points are matched by token-set
+  similarity at a threshold of 0.5, because independent passes always word the
+  same finding differently.
+- **Theme names**, for information only. Themes are derived per run, so
+  different wording is expected and is never treated as a disagreement.
+- **Top priority actions** overlap, and whether the highest-priority item agrees.
+- **Narrative fields**, with a coarse similarity score and a flag when a field is
+  present in one run and empty in the other.
+- **A verdict** of High, Moderate or Low agreement, with the rule used, plus the
+  explicit list of items a human must decide.
+
+Its output is pasted into the reconciliation step. Disagreements must be
+surfaced in the final report, never averaged away.
