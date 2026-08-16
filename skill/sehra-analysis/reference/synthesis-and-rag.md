@@ -17,6 +17,28 @@ Before writing, note any residual data-quality issues, inconsistencies or unclea
 surface them only as a brief caveat in `dataQualityNote`. Do not let the completeness review
 become the main output unless the issues materially affect interpretation.
 
+## This synthesis is run twice, blind, and then reconciled
+
+Stage 2 is not a single pass. The synthesis below is run **twice independently**, in separate
+conversations with no sight of each other, saved as `run-A.json` and `run-B.json`. A deterministic
+script then computes where the two passes agree and disagree, and a reconciliation pass, given both
+runs and that comparison, produces the final report.
+
+`reference/double-extraction.md` is the protocol: how to achieve blindness, the reconciliation
+rules, what to do when the two passes are two or more RAG levels apart, what the run record holds,
+and the single-pass fallback. Read it before starting stage 2. The instructions on this page are
+what each individual pass follows, and they are also what the reconciliation pass writes against.
+
+Two consequences for what you write here:
+
+- **`dataQualityNote` must record that double extraction was used**, alongside the substantive
+  data-quality caveats, and must name any divergence between the two passes that was left
+  unresolved. Where the synthesis was run only once, that must be said instead. Never let
+  single-pass work read as double-extracted.
+- **A RAG level is never averaged or split between the two passes.** A one-level difference is
+  reconciled with a stated reason. A two-level difference is escalated for a human at Peek to
+  adjudicate, and the rating in the report is a provisional holding value until they do.
+
 ## Before you write
 
 Run the deterministic scripts in `scripts/` first:
@@ -25,6 +47,10 @@ Run the deterministic scripts in `scripts/` first:
 python3 scripts/consistency_checks.py path/to/export.json --json
 python3 scripts/summarise_export.py   path/to/export.json --skip-blanks --max-chars 60000
 ```
+
+Run them **once**. The same output feeds both synthesis passes, so that any difference between the
+passes is a difference in reasoning rather than in what they were shown. If the export is corrected
+part way through stage 2, discard the passes already run and start again.
 
 `--skip-blanks` is appropriate here, and only here. See `SKILL.md` for what the checks do and do
 not compute. Use their output for anything numeric that appears in the report. Where the checks

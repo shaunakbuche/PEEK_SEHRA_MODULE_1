@@ -41,6 +41,8 @@ to pass through a named human reviewer before it leaves Peek.
   component, grouped under themes derived from the evidence in that assessment.
 - Propose a RAG feasibility rating per component and overall, with a written justification.
 - Propose up to ten prioritised actions across the whole assessment.
+- Produce that synthesis **twice, independently and blind**, then reconcile the two passes into one
+  report that surfaces where they disagreed (section 6, blind double extraction and reconciliation).
 
 **The AI does not:**
 
@@ -56,10 +58,12 @@ to pass through a named human reviewer before it leaves Peek.
   SPECS 2030) that framing is fixed in the prompt, not looked up.
 - Replace the site visit, the desk review, or the assessor's own judgement recorded in the module.
 
-## 3. The two-stage pipeline
+## 3. The pipeline
 
-The analysis is deliberately split into two stages that run at different times, on different views
-of the same data, with different output contracts.
+The analysis is deliberately split into stages that run at different times, on different views of
+the same data, with different output contracts. Stages 1 and 2 are the two analytical stages: an
+audit, then an interpretation. Stages 3 and 4 exist because stage 2 is run twice and the two passes
+have to be compared and reconciled; they are described in full in section 6.
 
 ```
   Partner completes Module 1 in the web platform
@@ -70,7 +74,7 @@ of the same data, with different output contracts.
                   +--------------------------------------------------+
                   |                                                  |
                   v                                                  |
-  STAGE 1  Completeness and consistency review                       |
+  STAGE 1  Completeness and consistency review (runs once)           |
     a. Python scripts: blanks, arithmetic, rate-vs-count,            |
        cross-section reconciliation, structural Yes/No checks        |
     b. Claude: interprets the script findings, judges conditional    |
@@ -81,15 +85,29 @@ of the same data, with different output contracts.
                   |                                       (re-export)
                   v
   STAGE 2  Synthesis and RAG (only on a corrected module)
+           RUN TWICE, BLIND, from the same export and the same
+           deterministic findings
     a. Same Python findings, carried forward as a data-quality caveat
     b. Claude: themed synthesis, cross-cutting summaries, RAG,
        strategy and policy implications, top ten actions
+                  |
+          pass A -+- pass B     two fresh conversations, neither
+                  |             able to see the other's output
+                  v
+  STAGE 3  Deterministic comparison (code, not the model)
+    python3 scripts/compare_runs.py run-A.json run-B.json
+                  |
+                  v
+  STAGE 4  Reconciliation: Claude is given both runs plus the
+           comparison output and writes the FINAL report.
+           Divergences are surfaced, never averaged. A RAG gap of
+           two or more levels escalates to human adjudication.
                   |
                   v
   Peek reviews and edits in the platform -> approve -> PDF and DOCX to partner
 ```
 
-### Why the stages are separate
+### Why stages 1 and 2 are separate
 
 - **They answer different questions.** Stage 1 asks "is this module complete and internally
   consistent". Stage 2 asks "what does this evidence mean for feasibility". Mixing them produces a
@@ -173,6 +191,9 @@ findings:
   themes derived from the evidence rather than mechanical application of the list.
 - The RAG rating per component and overall, justified by the balance of enablers and barriers.
 - Priority and sequencing of the recommended actions.
+- At stage 4, which of two divergent readings the evidence better supports, and what to say about a
+  divergence that cannot be resolved. **Whether** the two passes diverged is not a model judgement;
+  that is computed by script at stage 3.
 - The wording of everything.
 
 ### 4.3 How the boundary is enforced
@@ -184,6 +205,18 @@ python3 scripts/validate_export.py     export.json   # shape and contract versio
 python3 scripts/completeness_checks.py export.json   # blanks, conditional blanks, coverage
 python3 scripts/consistency_checks.py  export.json   # arithmetic and cross-section checks
 ```
+
+One further script runs **after** the model rather than before it, and is deterministic for the same
+reason:
+
+```bash
+python3 scripts/compare_runs.py run-A.json run-B.json  # stage 3: where the two passes agree
+```
+
+It takes the two blind synthesis passes and computes where they agree and where they differ. The
+model is not asked whether its two runs agreed, because a model asked to assess its own output will
+tend to reconcile it. Agreement is a mechanical property of two JSON documents, so it is measured
+mechanically, and the model sees the answer as fixed input at stage 4.
 
 - The scripts run first. Their JSON output is part of the model's input, not something the model
   can regenerate.
@@ -239,7 +272,12 @@ Every run of either stage produces a run record. Nothing is published without on
 | `scriptVersion` | Version of the deterministic script set |
 | `model` | Model identifier used for the run |
 | `deterministicFindings` | The scripts' JSON output, verbatim |
-| `modelOutputRaw` | The model's JSON output as returned, before any human edit |
+| `extraction` | `double` or `single`. `single` must carry the reason, and must also appear in the report's `dataQualityNote` |
+| `runA`, `runB` | Both blind synthesis passes as returned, `run-A.json` and `run-B.json`, unedited. Retained even where they were superseded at reconciliation |
+| `blindnessConfirmed` | Whether pass B was produced in a fresh conversation with no sight of pass A. If this cannot be affirmed, the run is not double extraction and is recorded as `single` |
+| `comparisonOutput` | The verbatim JSON output of `compare_runs.py`, the stage 3 record of where the passes agreed |
+| `reconciliationDecisions` | For each divergence the comparison found: what each pass said, what the final report says, and why. Including any divergence escalated for human adjudication and how it was settled |
+| `modelOutputRaw` | The model's JSON output as returned, before any human edit. Under double extraction this is the stage 4 reconciled report |
 | `schemaValidation` | Pass or fail against `ReportContentSchema` / `CompletenessSchema`, with errors if any |
 | `humanEdits` | Every save between generation and publication: editor, timestamp, full content snapshot |
 | `publication` | Approver, approval timestamp, PDF and DOCX URLs |
@@ -321,6 +359,77 @@ SHA-256, check out the skill version named in the run record, run both stages, a
 rubric in `VALIDATION-PROTOCOL.md`). A stability check of this kind is part of the validation
 protocol.
 
+### Blind double extraction and reconciliation
+
+**What it is.** The synthesis is produced **twice, independently, without either pass seeing the
+other**, and a separate reconciliation step resolves the differences into the report that is
+actually issued. The method is borrowed from systematic reviews, where two reviewers extract data
+from the same paper independently and a defined step settles their disagreements. Mert demonstrated
+it on a 75-poster analysis project and asked for the same rigour here, because this output is
+partner-facing. Until now the synthesis ran once; this closes that gap.
+
+**Why it is worth the extra run.** A single pass produces one answer and no way to tell a confident
+right answer from a confident wrong one. Fluent output looks the same either way. A second
+independent pass gives something to compare against: where the two agree, the reading is at least
+stable; where they diverge, the divergence is itself a finding, and it points at the parts of the
+assessment where the evidence is thin, ambiguous or genuinely open to two readings. Those are
+precisely the passages a reviewer should spend time on, and a single run gives no way of locating
+them.
+
+**The four stages:**
+
+| Stage | What happens | Who or what does it |
+|---|---|---|
+| 1 | Completeness and consistency review. **Unchanged, runs once.** Double extraction applies to the synthesis, not to the audit | Scripts, then the model |
+| 2 | Synthesis run **twice**. Pass A runs normally from the export and is saved as `run-A.json`. Pass B runs again in a **fresh conversation** with no sight of pass A, from the same export and the same deterministic script output, and is saved as `run-B.json` | The model, twice, blind |
+| 3 | `python3 scripts/compare_runs.py run-A.json run-B.json` computes where the two passes agree and where they disagree | **Code, not the model** |
+| 4 | The model is given **both** runs plus the comparison output and produces the final report, under the rules below | The model, reasoning under stated rules |
+
+**Blindness is the whole exercise.** If pass B can see pass A it will anchor on it, agreement
+becomes an artefact of the second pass having read the first, and the comparison measures nothing.
+Pass B therefore runs in a fresh conversation. **If a fresh conversation is not possible, the run is
+not blind, and it must be recorded as single-pass** rather than presented as double extraction.
+
+**The rules stage 4 works under:**
+
+- **Disagreements are surfaced, never silently averaged or split.** Splitting the difference between
+  two readings produces a third reading that neither pass supported and that no evidence backs.
+- **RAG divergence of one level** is reconciled in the report, with the reason stated.
+- **RAG divergence of two or more levels is a red flag.** Do not pick one. Escalate it for human
+  adjudication, say so in the report's `dataQualityNote`, and record it in the run record. Two
+  passes over the same evidence landing two levels apart means the evidence does not support a
+  confident rating, and that is the finding.
+- **Content appearing in only one pass is not automatically wrong.** One pass noticing something the
+  other missed is a normal and useful result. It is judged against the evidence and kept if
+  supported.
+- **Content in neither pass is never invented at reconciliation.** Stage 4 resolves what the two
+  passes produced; it is not a third opportunity to write new analysis.
+- **Different theme wording between passes is expected and is not itself a disagreement.** Themes
+  are derived from the evidence rather than chosen from a fixed list, so two passes will name them
+  differently. What matters is whether the same underlying evidence was captured, not whether the
+  label matched.
+- **The `dataQualityNote` in the final report must record that double extraction was used**, and
+  must note any divergence left unresolved. `ReportContentSchema` has no dedicated field for this,
+  so `dataQualityNote` is where it goes, and the report contract is unchanged.
+
+**What is added to the run record.** Both pass files, the comparison output verbatim, and the
+reconciliation decisions, so a reader can see not only what the report concluded but what the two
+passes disagreed about on the way there. The fields are listed in section 5.1.
+
+**Single-pass fallback.** Running the synthesis once is permitted where time does not allow two
+passes. It must then be **recorded explicitly, in the run record and in the report's
+`dataQualityNote`**. Single-pass work must never be presented as double-extracted. The disclosure is
+the point: a reader is entitled to know which assurance the report carries, and a fallback that is
+invisible in the output is worse than no fallback, because it makes every report's provenance
+uncertain.
+
+**What this does not fix.** Double extraction reduces the risk of a confident wrong answer. It does
+not eliminate it. **Both passes use the same model and the same prompt, so they can fail the same
+way**, and two passes that share a misreading of the evidence will agree with each other
+confidently. Agreement between the passes is therefore evidence of stability, not evidence of
+correctness. It does not replace the reviewer's check against the export, and no gate in
+`VALIDATION-PROTOCOL.md` is relaxed because a report was double-extracted.
+
 ## 7. Human in the loop
 
 **Nothing reaches a partner unreviewed.** The workflow enforces this: generation creates a draft
@@ -329,11 +438,14 @@ the PDF and DOCX and releases them to the partner's workspace.
 
 **Roles:**
 
-- **Operator** (Peek staff) runs the export and the two stages, and checks that the run completed
-  and validated.
+- **Operator** (Peek staff) runs the export and the stages, keeps the two synthesis passes blind of
+  each other, runs the comparison script, and checks that the run completed and validated.
 - **Reviewer** (Haroon, or a Peek analyst with his sign-off) reads the draft against the export,
   edits it in the platform, and approves it. **The reviewer is accountable for the final text.**
   Once approved, the report is Peek's report, not the model's.
+- **Adjudicator** settles any divergence stage 4 escalated, in practice the reviewer. A RAG gap of
+  two or more levels between the passes is decided by a person, with the decision and the reason
+  written into the run record. It is not left to the model and not left unstated in the report.
 - **Approver** is recorded in `reports.approved_by`. If reviewer and approver differ, both are on
   the record.
 
@@ -345,7 +457,11 @@ the PDF and DOCX and releases them to the partner's workspace.
 4. Themes reflect this assessment rather than a generic list.
 5. Action points are specific to this context and traceable to a barrier identified in the module.
 6. The data-quality caveat matches what the completeness review actually found.
-7. House style: British English, no em dashes, no over-claiming where evidence is thin.
+7. The data-quality caveat states whether the report was double-extracted or single-pass, and any
+   divergence escalated for adjudication is recorded there and has actually been adjudicated.
+8. Where the two passes diverged, the reconciliation decision is one the reviewer would defend, and
+   nothing has been averaged into a middle position that neither pass supported.
+9. House style: British English, no em dashes, no over-claiming where evidence is thin.
 
 **Escalation.** If the reviewer judges the draft to be materially wrong rather than in need of
 editing, the correct action is to discard it, record why in the run record, and write by hand. A
@@ -357,7 +473,7 @@ one rather than absorbed silently.
 | Failure mode | Why it happens | Mitigation | Residual risk |
 |---|---|---|---|
 | **Hallucinated specifics**: a policy name, a study, a figure, an institution that is not in the module | Models fill gaps with plausible domain content | Prompt forbids inventing statistics, names and policies; numbers come only from scripts; reviewer check 1 and 2; validation gates fabrication as a hard fail | Low but never zero. This is the single most damaging failure for a partner-facing document, so it is checked explicitly, every time |
-| **Over-confident synthesis from thin evidence**: a firm conclusion drawn from one sparse answer | Sparse input still produces fluent output | Prompt requires cautious phrasing where evidence is thin; stage 1 runs first so thin sections are known; the data-quality caveat is a required field | Moderate. Fluency reads as confidence, so the reviewer must weigh evidence, not prose |
+| **Over-confident synthesis from thin evidence**: a firm conclusion drawn from one sparse answer | Sparse input still produces fluent output | Prompt requires cautious phrasing where evidence is thin; stage 1 runs first so thin sections are known; the data-quality caveat is a required field; two blind passes tend to diverge exactly where evidence is thin, which makes those passages visible at stage 4 | Moderate. Fluency reads as confidence, so the reviewer must weigh evidence, not prose |
 | **Missed cross-references**: a contradiction between two components goes unnoticed (for example insurance covers eye care in one place, spectacles excluded in another) | Long input, and cross-component reasoning is harder than local reasoning | D3 and D7 make the mechanical cases explicit; the completeness prompt names insurance and benefit-package harmonisation and standalone-versus-integrated programme distinctions as required checks | Moderate for the non-mechanical cases. The model can only be prompted to look; it cannot be guaranteed to find |
 | **Theme drift**: themes become generic, or differ arbitrarily between two similar assessments | Theme derivation is open by design | Recurring themes supplied as hints; validation scores whether themes fit the evidence; reviewer check 4 | Moderate, and partly acceptable. Themes should differ between contexts. They should not be vacuous |
 | **RAG rating misjudged** | Ratings compress a lot of evidence into one label | Legend fixed verbatim; rating must be justified by the listed enablers and barriers; validation measures agreement with the human rating per component | Moderate. Adjacent-level disagreement between two competent human reviewers is normal, and the acceptance threshold reflects that |

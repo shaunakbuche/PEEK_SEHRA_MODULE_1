@@ -39,6 +39,11 @@ Run them as two separate pieces of work, in this order. Do not blend them.
 | 1. Completeness review | Readable review for the submitting team | As soon as a module is submitted, before any synthesis |
 | 2. Synthesis and RAG | Themed report JSON plus a RAG feasibility dashboard | Once the team has corrected or explained the gaps found in stage 1 |
 
+**Stage 2 is run twice, blind, and then reconciled.** Two independent synthesis passes from the
+same export, a deterministic comparison of the two, and a reconciliation pass that produces the
+final report. This is Mert's systematic-review method and it is the standard workflow, not an
+optional extra. `reference/double-extraction.md` is the protocol.
+
 **Stage 1 is completeness and consistency only.** It is not thematic analysis, not feasibility
 assessment, not a RAG rating and not a programme synthesis. Do not analyse enablers, barriers or
 recommendations there.
@@ -54,7 +59,7 @@ stage 1 normally comes first.
 
 ### Always: run the deterministic scripts first
 
-Before reading the assessment for meaning, run the two scripts in `scripts/`, in the order
+Before reading the assessment for meaning, run the input scripts in `scripts/`, in the order
 `scripts/README.md` prescribes.
 
 ```bash
@@ -67,11 +72,15 @@ python3 scripts/summarise_export.py path/to/export.json
 
 #    Stage 2 may drop blanks and cap the size.
 python3 scripts/summarise_export.py path/to/export.json --skip-blanks --max-chars 60000
+
+# 3. Stage 2 only, after both blind synthesis passes have been saved.
+#    Code, not you, computes where the two passes agree and disagree.
+python3 scripts/compare_runs.py run-A.json run-B.json
 ```
 
-`scripts/` contains exactly two runnable scripts, `consistency_checks.py` and
-`summarise_export.py`, alongside `sample_export.json`, `test_consistency_checks.py` and
-`README.md`. There is no separate validation script and no separate completeness script.
+`scripts/` contains three runnable scripts, `consistency_checks.py`, `summarise_export.py` and
+`compare_runs.py`, alongside `sample_export.json`, `test_consistency_checks.py` and `README.md`.
+There is no separate validation script and no separate completeness script.
 `consistency_checks.py` computes the completeness figures itself, and warns on stderr if the
 export has no components, but it does **not** enforce the contract: it accepts a bare unwrapped
 export object, so checking for the `sehraExport` key and the version is your job, not the
@@ -82,7 +91,10 @@ script's. Notes on the flags:
 - `--max-chars N` drops whole sections from the end and names them in a closing note. If that
   note appears, do not draw conclusions about the parts you were not shown.
 - `consistency_checks.py` also takes `--severity major|minor` for its human-readable output.
-- Both scripts accept `-` in place of a path to read the export from stdin.
+- Both export-reading scripts accept `-` in place of a path to read the export from stdin.
+- `compare_runs.py` takes the two saved synthesis outputs rather than the export, and belongs to
+  stage 2 only. Never describe the differences between two runs from your own reading of them; the
+  comparison is deterministic for the same reason the arithmetic is.
 
 If a script errors, say so in the output rather than silently substituting your own arithmetic.
 
@@ -135,10 +147,27 @@ that reference file.
 
 ### Stage 2: synthesis and RAG dashboard
 
-Read `reference/synthesis-and-rag.md` for the analysis instructions and
-`reference/output-schema.md` for the exact output contract.
+Read `reference/synthesis-and-rag.md` for the analysis instructions,
+`reference/output-schema.md` for the exact output contract, and
+`reference/double-extraction.md` for the double extraction protocol.
 
-Produce two things, in this order:
+Stage 2 runs in four steps:
+
+1. **Pass A.** Run the synthesis from the export and the script output. Save the report JSON as
+   `run-A.json`.
+2. **Pass B.** Run the synthesis again in a **fresh conversation**, with no sight of pass A, from
+   the same export and the same script output. Save it as `run-B.json`. If pass B can see pass A
+   it will anchor on it and the exercise is worthless; if a fresh conversation is not possible,
+   the run is not blind and must be recorded as single-pass.
+3. **Compare**, with `python3 scripts/compare_runs.py run-A.json run-B.json`.
+4. **Reconcile.** Given both runs and the comparison output, produce the final report.
+   Disagreements are surfaced, never silently averaged or split. A one-level RAG difference is
+   reconciled with a stated reason; a difference of two or more levels is escalated for human
+   adjudication rather than settled. `dataQualityNote` records that double extraction was used and
+   any divergence left unresolved. The rules in full are in `reference/double-extraction.md`.
+
+The reconciliation pass is the one that produces the deliverables. It produces two things, in this
+order:
 
 1. **The report JSON**, matching `ReportContentSchema` exactly, so the human can paste it into
    the website's "Import report JSON" box and publish it as PDF and Word.
@@ -228,9 +257,14 @@ These apply to both stages and override any conflicting instinct.
    professional public-health register.
 8. **Stay in scope.** Stage 1 does not rate feasibility. Stage 2 does not become a completeness
    audit.
-9. **This is partner-facing.** A human at Peek reviews, edits and approves everything before it
-   reaches a partner. Write so that a reviewer can trace each claim back to a field. Flag
-   anything you are unsure about rather than smoothing it over.
+9. **Never present single-pass work as double-extracted.** Running the stage 2 synthesis once is
+   permitted when time does not allow two passes, but it must then be stated explicitly in the
+   report's `dataQualityNote` and in the run record. A second pass that saw the first, or that ran
+   in the same conversation, is not blind and counts as single-pass. The protocol is only worth
+   anything if the label can be trusted.
+10. **This is partner-facing.** A human at Peek reviews, edits and approves everything before it
+    reaches a partner. Write so that a reviewer can trace each claim back to a field. Flag
+    anything you are unsure about rather than smoothing it over.
 
 ## Reproducibility and oversight
 
@@ -240,14 +274,18 @@ Every run should be traceable. In the chat, before the analysis, state:
 - the export's `version` and `exportedAt`
 - the assessment `id` and `status`
 - which scripts you ran and whether any reported an error
+- at stage 2, whether the run was double extraction or single pass, and for each pass that it was
+  a fresh conversation with no sight of the other
 
 This lets Peek re-run the same export later and compare, and it lets a reviewer see exactly what
-the analysis was based on. Do not paste this header inside the report JSON; it belongs in the
+the analysis was based on. `reference/double-extraction.md` lists what the full run record holds. Do not paste this header inside the report JSON; it belongs in the
 conversation, not in the published report.
 
 ## Reference files
 
 - `reference/completeness-review.md`: stage 1 instructions and required output structure
 - `reference/synthesis-and-rag.md`: stage 2 analysis instructions, RAG levels and legend
+- `reference/double-extraction.md`: the blind double extraction and reconciliation protocol for
+  stage 2, including the single-pass fallback and what the run record holds
 - `reference/output-schema.md`: the exact report JSON contract, with a worked example
 - `README.md`: plain-English install and use guide for non-engineers at Peek
